@@ -1,0 +1,21 @@
+# This is a Dockerfile - it's like a recipe for creating a container
+# Let's containerize your demo.py to understand Docker
+
+# Step 1: Start with a lightweight Python base
+FROM python:3.11-slim
+
+# Step 2: Set working directory inside container
+WORKDIR /app
+
+# Step 3: Install only what we need (keeping it light!)
+RUN pip install --no-cache-dir gradio pandas scanpy scvi-tools matplotlib scipy
+
+# Step 4: Copy your demo files
+COPY demo.py .
+COPY macaque.h5ad .
+
+# Step 5: Expose the port Gradio uses
+EXPOSE 7862
+
+# Step 6: Run your demo when container starts
+CMD ["python", "demo.py"] 
