@@ -31,9 +31,9 @@ We use **GitHub Flow** with feature branches
 ### Example
 ```
 demo (main branch)
-??? feature/week1-project-setup
-??? feature/week2-model-registry
-??? hotfix/urgent-fixes
+├── feature/week1-project-setup
+├── feature/week2-model-registry
+└── hotfix/urgent-fixes
 ```
 
 ### Development Process
@@ -56,10 +56,10 @@ git push origin feature/your-feature-name
 
 ```
 HealthAIweb/
-??? backend/           # FastAPI server
-??? frontend/          # React app
-??? model_registry/    # AI models
-??? docs/             # Documentation
+├── backend/           # FastAPI server
+├── frontend/          # React app
+├── model_registry/    # AI models
+└── docs/              # Documentation
 ```
 
 ## Docker Commands
@@ -75,7 +75,7 @@ docker-compose logs -f backend
 docker-compose down
 ```
 
-## Week 1 Status ?
+## Week 1 Status ✅
 
 - [x] Project structure and Docker setup
 - [x] Basic service configuration  

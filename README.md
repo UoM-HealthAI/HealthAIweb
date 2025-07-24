@@ -19,11 +19,11 @@ docker-compose up --build
 
 ```
 HealthAIweb/
-¦§¦¡¦¡ backend/           # FastAPI server
-¦§¦¡¦¡ frontend/          # React app
-¦§¦¡¦¡ model_registry/    # AI models
-¦§¦¡¦¡ docs/              # Documentation
-¦¦¦¡¦¡ docker-compose.yml # Development environment
+â”œâ”€â”€ backend/           # FastAPI server
+â”œâ”€â”€ frontend/          # React app
+â”œâ”€â”€ model_registry/    # AI models
+â”œâ”€â”€ docs/              # Documentation
+â””â”€â”€ docker-compose.yml # Development environment
 ```
 
 ## Technology Stack
