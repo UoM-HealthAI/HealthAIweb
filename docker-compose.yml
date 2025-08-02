@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  # FastAPI Backend
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - ./model_registry:/app/model_registry
+    environment:
+      - PYTHONPATH=/app
+    restart: unless-stopped
+    
+  # React Frontend
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  # MkDocs Documentation
+  docs:
+    build: ./docs
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./docs:/docs
+    restart: unless-stopped
+
+# Week 1: Basic multi-service setup with Docker
+# Usage: docker-compose up --build 

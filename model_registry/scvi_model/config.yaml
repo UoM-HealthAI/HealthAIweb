@@ -1,0 +1,51 @@
+# scVI Model Configuration File
+# This file describes what the scVI model does
+
+# Basic Information
+metadata:
+  name: "scVI Model"
+  description: "AI model for single-cell data analysis"
+  version: "1.0.0"
+
+# Input specifications
+input:
+  supported_formats:
+    - ".h5ad"  # AnnData format (preferred)
+    - ".csv"   # CSV format
+  max_file_size: "500MB"
+
+# Output specifications
+output:
+  visualization:
+    - "umap_plot.png"     # UMAP visualization
+    - "loss_curve.png"    # Training loss curve
+  
+  data_files:
+    - "latent_representation.csv"  # Low-dimensional embedding
+    - "processed_data.h5ad"        # Processed AnnData object
+  
+  metadata:
+    - "model_summary.json"         # Model training summary
+
+# Processing parameters
+parameters:
+  default:
+    n_latent: 10          # Number of latent dimensions
+    n_epochs: 400         # Training epochs
+    learning_rate: 0.001  # Learning rate
+    batch_size: 128       # Batch size for training
+  
+  user_configurable:
+    - "n_latent"
+    - "n_epochs"
+
+# Model interface
+interface:
+  entry_point: "model.py"
+  main_function: "run_scvi_model"
+  runtime: "python"
+  dependencies:
+    - "scvi-tools>=0.20.0"
+    - "scanpy>=1.9.0"
+    - "pandas>=1.5.0"
+    - "matplotlib>=3.6.0" 
