@@ -10,12 +10,13 @@ theme:
 
 nav:
   - Home: index.md
-  - Getting Started: getting-started.md
-  - Developer Guide: developer-guide.md
   - Models:
-    - Overview: models/index.md
     - scVI Model: models/scvi.md
-  - API Reference: api-reference.md
+  - Contribution Guide: contribution.md
+  # Temporarily comment out missing files
+  # - Getting Started: getting-started.md
+  # - Developer Guide: developer-guide.md
+  # - API Reference: api-reference.md
 
 plugins:
   - search

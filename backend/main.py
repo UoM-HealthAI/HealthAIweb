@@ -1,6 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+# Import our Model Scanner
+from services.model_registry import scan_models
+
 # Create FastAPI app
 app = FastAPI(
     title="HealthAI Web Platform",
@@ -31,8 +34,16 @@ async def health_check():
     """Health check for monitoring"""
     return {"status": "healthy"}
 
-# Week 1: Basic structure setup
-# Week 2: Model-related endpoints to be added
+# Week 2: Model-related endpoints
+@app.get("/models")
+async def get_models():
+    """Get list of available AI models"""
+    models = scan_models()
+    return {
+        "status": "success",
+        "count": len(models),
+        "models": models
+    }
 
 if __name__ == "__main__":
     import uvicorn
