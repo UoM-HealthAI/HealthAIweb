@@ -127,7 +127,8 @@ class ModelExecutor:
                 model_info,
                 input_path,
                 str(output_path),
-                parameters
+                parameters,
+                model_id
             )
             
             # Validate result format
@@ -187,7 +188,8 @@ class ModelExecutor:
         model_info: Dict[str, Any],
         input_path: str,
         output_dir: str,
-        parameters: Dict[str, Any]
+        parameters: Dict[str, Any],
+        model_id: str
     ) -> Dict[str, Any]:
         """Load and execute model from its Python file"""
         

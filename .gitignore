@@ -66,6 +66,7 @@ docker-compose.override.yml
 data/
 datasets/
 output/
+outputs/
 results/
 uploads/
 

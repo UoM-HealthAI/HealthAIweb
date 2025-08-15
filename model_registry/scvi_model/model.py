@@ -216,7 +216,7 @@ def _load_data(input_path: str) -> 'AnnData':
     else:
         raise ValueError(f"Unsupported file format: {input_path}")
     
-    print(f"Loaded data: {adata.n_obs} cells ¡¿ {adata.n_vars} genes")
+    print(f"Loaded data: {adata.n_obs} cells x {adata.n_vars} genes")
     return adata
 
 
@@ -238,7 +238,7 @@ def _preprocess_data(adata: 'AnnData') -> 'AnnData':
     sc.pp.highly_variable_genes(adata, min_mean=0.0125, max_mean=3, min_disp=0.5)
     adata = adata[:, adata.var.highly_variable]
     
-    print(f"After preprocessing: {adata.n_obs} cells ¡¿ {adata.n_vars} genes")
+    print(f"After preprocessing: {adata.n_obs} cells x {adata.n_vars} genes")
     return adata
 
 
