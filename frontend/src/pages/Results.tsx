@@ -1,24 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 
-// Result data type definition
+// Result data type definition matching API response
 interface TaskResult {
   task_id: string;
-  status: string;
-  message: string;
-  results?: {
-    visualizations?: {
-      umap_plot?: string;
-      loss_curve?: string;
+  found: boolean;
+  metadata: {
+    task_id: string;
+    model_id: string;
+    filename: string;
+    file_size: number;
+    parameters: any;
+    status: string;
+    validation: any;
+    execution_result: {
+      status: string;
+      visualizations?: {
+        umap_plot?: string;
+        loss_curve?: string;
+      };
+      data_files?: {
+        latent_representation?: string;
+        processed_data?: string;
+      };
+      metadata?: any;
     };
-    data_files?: {
-      latent_representation?: string;
-      processed_data?: string;
-    };
-    metadata?: any;
-  };
-  error_details?: {
-    error_message: string;
   };
 }
 
@@ -52,7 +58,7 @@ function Results() {
       console.log('Received results:', data);
       
       if (data.found && data.metadata) {
-        setResult(data.metadata);
+        setResult(data);
       } else {
         throw new Error('Results not found.');
       }
@@ -66,11 +72,26 @@ function Results() {
   };
 
   // File download function
-  const downloadFile = (filePath: string, fileName: string) => {
-    // In reality, backend should provide file download API
-    // Here we simply display the path
-    console.log('Download:', filePath);
-    alert(`Download feature is still under development.\nFile path: ${filePath}`);
+  const downloadFile = async (filePath: string, fileName: string) => {
+    try {
+      const response = await fetch(`http://localhost:8000/${filePath}`);
+      if (!response.ok) {
+        throw new Error('Download failed');
+      }
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Download error:', error);
+      alert('Download failed. Please try again.');
+    }
   };
 
   // Loading
@@ -114,65 +135,113 @@ function Results() {
 
   return (
     <div>
-      <h1 className="page-title">Analysis Results</h1>
+      <div style={{textAlign: 'center', marginBottom: '2rem'}}>
+        <h1 className="page-title">Analysis Results</h1>
+        <p style={{fontSize: '1.1rem', color: '#666'}}>
+          View your processed data, visualizations, and download files
+        </p>
+      </div>
       
-              {/* Basic information */}
+      {/* Basic information */}
       <div className="card">
-        <h3>Task Information</h3>
+        <h3 style={{color: '#495057', marginBottom: '1rem'}}>Task Information</h3>
         <p><strong>Task ID:</strong> {result.task_id}</p>
+        <p><strong>Model:</strong> {result.metadata.model_id}</p>
+        <p><strong>Input File:</strong> {result.metadata.filename}</p>
         <p><strong>Status:</strong> 
           <span style={{
-            color: result.status === 'completed' ? 'green' : 
-                   result.status === 'failed' ? 'red' : 'orange',
+            color: result.metadata.status === 'completed' ? 'green' : 
+                   result.metadata.status === 'failed' ? 'red' : 'orange',
             fontWeight: 'bold',
             marginLeft: '0.5rem'
           }}>
-            {result.status}
+            {result.metadata.status}
           </span>
         </p>
-        <p><strong>Message:</strong> {result.message}</p>
+        <p><strong>Parameters:</strong> {JSON.stringify(result.metadata.parameters)}</p>
       </div>
 
       {/* Display results if successful */}
-      {result.status === 'completed' && result.results && (
+      
+      {result?.metadata?.status === 'completed' && result?.metadata?.execution_result && (
         <>
           {/* Visualization results */}
-          {result.results.visualizations && (
+          {result.metadata.execution_result.visualizations && (
             <div className="card">
-              <h3>Visualizations</h3>
-              <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem'}}>
-                {result.results.visualizations.umap_plot && (
-                  <div>
-                    <h4>UMAP Plot</h4>
-                    <img 
-                      src={`http://localhost:8000/${result.results.visualizations.umap_plot}`}
-                      alt="UMAP Plot"
-                      style={{width: '100%', maxWidth: '400px', border: '1px solid #ddd'}}
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                        e.currentTarget.nextElementSibling!.textContent = 'Image not available';
-                      }}
-                    />
-                    <p style={{fontSize: '0.9rem', color: '#666'}}>
-                      UMAP visualization of the processed data
-                    </p>
+              <h3 style={{color: '#495057', marginBottom: '1rem'}}>Data Visualizations</h3>
+              <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem'}}>
+                {result.metadata.execution_result.visualizations.umap_plot && (
+                  <div style={{
+                    border: '1px solid #e9ecef',
+                    borderRadius: '8px',
+                    padding: '1rem',
+                    background: '#f8f9fa'
+                  }}>
+                    <h4 style={{color: '#007bff', marginBottom: '1rem'}}>UMAP Visualization</h4>
+                    <div style={{textAlign: 'center', marginBottom: '1rem'}}>
+                      <img 
+                        src={`http://localhost:8000/${result.metadata.execution_result.visualizations.umap_plot}`}
+                        alt="UMAP Plot"
+                        style={{
+                          width: '100%', 
+                          maxWidth: '400px', 
+                          border: '1px solid #ddd',
+                          borderRadius: '4px',
+                          background: 'white'
+                        }}
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.nextElementSibling!.textContent = 'Image not available';
+                        }}
+                      />
+                      <p style={{fontSize: '0.9rem', color: '#666', marginTop: '0.5rem'}}>
+                        2D representation of your single-cell data
+                      </p>
+                    </div>
+                    <button 
+                      className="btn btn-secondary"
+                      onClick={() => downloadFile(result.metadata.execution_result.visualizations!.umap_plot!, 'umap_plot.png')}
+                      style={{width: '100%'}}
+                    >
+                      Download UMAP Plot
+                    </button>
                   </div>
                 )}
-                {result.results.visualizations.loss_curve && (
-                  <div>
-                    <h4>Training Loss</h4>
-                    <img 
-                      src={`http://localhost:8000/${result.results.visualizations.loss_curve}`}
-                      alt="Loss Curve"
-                      style={{width: '100%', maxWidth: '400px', border: '1px solid #ddd'}}
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                        e.currentTarget.nextElementSibling!.textContent = 'Image not available';
-                      }}
-                    />
-                    <p style={{fontSize: '0.9rem', color: '#666'}}>
-                      Model training loss curve
-                    </p>
+                {result.metadata.execution_result.visualizations.loss_curve && (
+                  <div style={{
+                    border: '1px solid #e9ecef',
+                    borderRadius: '8px',
+                    padding: '1rem',
+                    background: '#f8f9fa'
+                  }}>
+                    <h4 style={{color: '#007bff', marginBottom: '1rem'}}>Training Progress</h4>
+                    <div style={{textAlign: 'center', marginBottom: '1rem'}}>
+                      <img 
+                        src={`http://localhost:8000/${result.metadata.execution_result.visualizations.loss_curve}`}
+                        alt="Loss Curve"
+                        style={{
+                          width: '100%', 
+                          maxWidth: '400px', 
+                          border: '1px solid #ddd',
+                          borderRadius: '4px',
+                          background: 'white'
+                        }}
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.nextElementSibling!.textContent = 'Image not available';
+                        }}
+                      />
+                      <p style={{fontSize: '0.9rem', color: '#666', marginTop: '0.5rem'}}>
+                        Model training convergence over epochs
+                      </p>
+                    </div>
+                    <button 
+                      className="btn btn-secondary"
+                      onClick={() => downloadFile(result.metadata.execution_result.visualizations!.loss_curve!, 'loss_curve.png')}
+                      style={{width: '100%'}}
+                    >
+                      Download Loss Curve
+                    </button>
                   </div>
                 )}
               </div>
@@ -180,37 +249,63 @@ function Results() {
           )}
 
           {/* Downloadable files */}
-          {result.results.data_files && (
+          {result.metadata.execution_result.data_files && (
             <div className="card">
-              <h3>Download Results</h3>
-              <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem'}}>
-                {result.results.data_files.latent_representation && (
-                  <div>
-                    <h4>Latent Representation</h4>
-                    <p>CSV file containing the processed latent representation</p>
+              <h3 style={{color: '#495057', marginBottom: '1rem'}}>Download Processed Data</h3>
+              <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem'}}>
+                {result.metadata.execution_result.data_files.latent_representation && (
+                  <div style={{
+                    border: '1px solid #e9ecef',
+                    borderRadius: '8px',
+                    padding: '1rem',
+                    background: '#f8f9fa'
+                  }}>
+                    <h4 style={{color: '#28a745', marginBottom: '0.5rem'}}>Latent Representation</h4>
+                    <p style={{fontSize: '0.9rem', color: '#666', marginBottom: '1rem'}}>
+                      CSV file containing the low-dimensional embeddings of your cells
+                    </p>
+                    <div style={{background: '#e8f5e8', padding: '0.5rem', borderRadius: '4px', marginBottom: '1rem'}}>
+                      <small style={{color: '#155724'}}>
+                        <strong>Usage:</strong> Import into Python/R for further analysis or visualization
+                      </small>
+                    </div>
                     <button 
-                      className="btn btn-secondary"
+                      className="btn btn-success"
                       onClick={() => downloadFile(
-                        result.results!.data_files!.latent_representation!, 
+                        result.metadata.execution_result.data_files!.latent_representation!, 
                         'latent_representation.csv'
                       )}
+                      style={{width: '100%'}}
                     >
-                      Download CSV
+                      Download CSV File
                     </button>
                   </div>
                 )}
-                {result.results.data_files.processed_data && (
-                  <div>
-                    <h4>Processed Data</h4>
-                    <p>H5AD file containing the full processed dataset</p>
+                {result.metadata.execution_result.data_files.processed_data && (
+                  <div style={{
+                    border: '1px solid #e9ecef',
+                    borderRadius: '8px',
+                    padding: '1rem',
+                    background: '#f8f9fa'
+                  }}>
+                    <h4 style={{color: '#28a745', marginBottom: '0.5rem'}}>Processed Dataset</h4>
+                    <p style={{fontSize: '0.9rem', color: '#666', marginBottom: '1rem'}}>
+                      Complete H5AD file with batch-corrected data and metadata
+                    </p>
+                    <div style={{background: '#e8f5e8', padding: '0.5rem', borderRadius: '4px', marginBottom: '1rem'}}>
+                      <small style={{color: '#155724'}}>
+                        <strong>Usage:</strong> Load directly into scanpy, scvi-tools, or other analysis tools
+                      </small>
+                    </div>
                     <button 
-                      className="btn btn-secondary"
+                      className="btn btn-success"
                       onClick={() => downloadFile(
-                        result.results!.data_files!.processed_data!, 
+                        result.metadata.execution_result.data_files!.processed_data!, 
                         'processed_data.h5ad'
                       )}
+                      style={{width: '100%'}}
                     >
-                      Download H5AD
+                      Download H5AD File
                     </button>
                   </div>
                 )}
@@ -221,10 +316,10 @@ function Results() {
       )}
 
       {/* Display error information if failed */}
-      {result.status === 'failed' && result.error_details && (
+      {result.metadata.status === 'failed' && (
         <div className="card" style={{backgroundColor: '#fff5f5', borderColor: '#fed7d7'}}>
           <h3>Error Details</h3>
-          <p style={{color: 'red'}}>{result.error_details.error_message}</p>
+          <p style={{color: 'red'}}>Analysis failed. Please try again.</p>
         </div>
       )}
     </div>

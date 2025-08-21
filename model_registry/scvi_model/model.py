@@ -157,13 +157,11 @@ def _create_placeholder_implementation(
 ) -> Dict[str, Any]:
     """Create placeholder implementation when scVI is not available"""
     
-    # Create placeholder visualization files
-    for viz_path in output_files["visualizations"].values():
-        Path(viz_path).touch()
+    # Create placeholder visualization files with actual content
+    _create_placeholder_visualizations(output_files["visualizations"])
     
-    # Create placeholder data files  
-    for data_path in output_files["data_files"].values():
-        Path(data_path).touch()
+    # Create placeholder data files with actual content
+    _create_placeholder_data_files(output_files["data_files"], n_latent)
     
     # Calculate execution time
     execution_time = time.time() - start_time
@@ -327,6 +325,85 @@ def _generate_data_files(adata: 'AnnData', model, data_paths: Dict[str, str]):
     
     # Save processed AnnData object
     adata.write_h5ad(data_paths["processed_data"])
+
+
+def _create_placeholder_visualizations(viz_paths: Dict[str, str]):
+    """Create placeholder visualizations with actual plots"""
+    import matplotlib.pyplot as plt
+    import numpy as np
+    
+    # Create UMAP plot
+    fig, ax = plt.subplots(figsize=(8, 6))
+    # Generate fake UMAP-like data
+    np.random.seed(42)
+    x = np.random.normal(0, 3, 1000)
+    y = np.random.normal(0, 3, 1000)
+    colors = np.random.choice(['red', 'blue', 'green', 'purple', 'orange'], 1000)
+    
+    scatter = ax.scatter(x, y, c=colors, alpha=0.6, s=20)
+    ax.set_xlabel('UMAP 1')
+    ax.set_ylabel('UMAP 2')
+    ax.set_title('scVI UMAP Embedding (Demo Data)')
+    ax.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.savefig(viz_paths["umap_plot"], dpi=300, bbox_inches='tight')
+    plt.close()
+    
+    # Create loss curve plot
+    fig, ax = plt.subplots(figsize=(8, 6))
+    epochs = np.arange(1, 51)
+    train_loss = 1.0 * np.exp(-epochs/20) + 0.1 + np.random.normal(0, 0.02, 50)
+    val_loss = 1.1 * np.exp(-epochs/18) + 0.12 + np.random.normal(0, 0.02, 50)
+    
+    ax.plot(epochs, train_loss, label='Training Loss', color='blue', linewidth=2)
+    ax.plot(epochs, val_loss, label='Validation Loss', color='red', linewidth=2)
+    ax.set_xlabel('Epoch')
+    ax.set_ylabel('Loss')
+    ax.set_title('scVI Training Progress (Demo Data)')
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.savefig(viz_paths["loss_curve"], dpi=300, bbox_inches='tight')
+    plt.close()
+
+
+def _create_placeholder_data_files(data_paths: Dict[str, str], n_latent: int):
+    """Create placeholder data files with actual content"""
+    import pandas as pd
+    import numpy as np
+    
+    # Create latent representation CSV
+    np.random.seed(42)
+    n_cells = 1000
+    latent_data = np.random.normal(0, 1, (n_cells, n_latent))
+    
+    latent_df = pd.DataFrame(
+        latent_data,
+        index=[f'Cell_{i}' for i in range(n_cells)],
+        columns=[f'latent_{i}' for i in range(n_latent)]
+    )
+    latent_df.to_csv(data_paths["latent_representation"])
+    
+    # For H5AD file, create a simple text file with information
+    # (Since we don't have anndata without scVI, create info file instead)
+    h5ad_info = """# Processed Data Information (Demo)
+This would contain the processed single-cell data in H5AD format.
+In a real implementation with scvi-tools installed, this would be an actual AnnData object.
+
+Contents would include:
+- Processed expression matrix
+- Cell metadata  
+- Gene annotations
+- Latent representations
+- Batch correction information
+
+To use this data:
+1. Install scvi-tools: pip install scvi-tools
+2. Load with: import scanpy as sc; adata = sc.read_h5ad('processed_data.h5ad')
+"""
+    
+    with open(data_paths["processed_data"], 'w') as f:
+        f.write(h5ad_info)
 
 
 if __name__ == "__main__":
