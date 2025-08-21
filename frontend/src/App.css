@@ -1,10 +1,10 @@
-/* 전체 앱 스타일 */
+/* Overall app styles */
 .App {
   min-height: 100vh;
   font-family: Arial, sans-serif;
 }
 
-/* 상단 네비게이션 바 */
+/* Top navigation bar */
 .navbar {
   background-color: #2c3e50;
   color: white;
@@ -36,21 +36,21 @@
   background-color: #34495e;
 }
 
-/* 메인 콘텐츠 영역 */
+/* Main content area */
 .main-content {
   padding: 2rem;
   max-width: 1200px;
   margin: 0 auto;
 }
 
-/* 페이지 제목 */
+/* Page title */
 .page-title {
   font-size: 2rem;
   margin-bottom: 2rem;
   color: #2c3e50;
 }
 
-/* 카드 스타일 */
+/* Card styles */
 .card {
   background: white;
   border-radius: 8px;
@@ -60,7 +60,7 @@
   border: 1px solid #e0e0e0;
 }
 
-/* 버튼 스타일 */
+/* Button styles */
 .btn {
   padding: 0.75rem 1.5rem;
   border: none;
@@ -86,4 +86,49 @@
 
 .btn-secondary:hover {
   background-color: #7f8c8d;
+}
+
+/* Form controls */
+.form-control {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  margin-top: 0.5rem;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+/* Disabled button */
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Grid layout */
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+/* Loading animation */
+.loading {
+  text-align: center;
+  color: #666;
+}
+
+/* Error message */
+.error {
+  color: #e74c3c;
+  background-color: #fff5f5;
+  border: 1px solid #fed7d7;
+  padding: 1rem;
+  border-radius: 4px;
+  margin: 1rem 0;
 }

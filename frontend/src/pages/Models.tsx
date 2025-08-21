@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-// 모델 정보를 담는 타입 정의 (TypeScript용)
+// Type definition for model information (TypeScript)
 interface Model {
   id: string;
   name: string;
@@ -8,38 +8,38 @@ interface Model {
 }
 
 function Models() {
-  // 상태(state): 컴포넌트가 기억해야 할 정보들
+  // State: information that the component needs to remember
   const [models, setModels] = useState<Model[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // 백엔드에서 모델 목록을 가져오는 함수
+  // Function to fetch model list from backend
   useEffect(() => {
     fetchModels();
   }, []);
 
   const fetchModels = async () => {
     try {
-      console.log('백엔드에서 모델 목록을 가져오는 중...');
+      console.log('Fetching model list from backend...');
       const response = await fetch('http://localhost:8000/models');
       
       if (!response.ok) {
-        throw new Error('모델 목록을 가져올 수 없습니다');
+        throw new Error('Could not fetch model list');
       }
       
       const data = await response.json();
-      console.log('받은 데이터:', data);
+      console.log('Received data:', data);
       
       setModels(data.models || []);
       setLoading(false);
     } catch (err) {
-      console.error('에러 발생:', err);
-      setError(err instanceof Error ? err.message : '알 수 없는 오류');
+      console.error('Error occurred:', err);
+      setError(err instanceof Error ? err.message : 'Unknown error');
       setLoading(false);
     }
   };
 
-  // 로딩 중일 때 보여줄 화면
+  // Screen to show while loading
   if (loading) {
     return (
       <div>
@@ -51,7 +51,7 @@ function Models() {
     );
   }
 
-  // 에러가 발생했을 때 보여줄 화면
+  // Screen to show when error occurs
   if (error) {
     return (
       <div>

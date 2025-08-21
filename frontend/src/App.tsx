@@ -10,7 +10,7 @@ function App() {
   return (
     <Router>
       <div className="App">
-        {/* 상단 네비게이션 바 */}
+        {/* Top navigation bar */}
         <nav className="navbar">
           <h1>HealthAI Web Platform</h1>
           <div className="nav-links">
@@ -23,7 +23,7 @@ function App() {
           </div>
         </nav>
 
-        {/* 페이지 내용이 여기에 표시됩니다 */}
+        {/* Page content will be displayed here */}
         <main className="main-content">
           <Routes>
             <Route path="/" element={<Home />} />
