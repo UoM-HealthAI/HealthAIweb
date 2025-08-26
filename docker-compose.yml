@@ -36,5 +36,17 @@ services:
       - ./docs:/docs
     restart: unless-stopped
 
+  # Demo Service with live reload
+  demo:
+    build:
+      context: .
+      dockerfile: Dockerfile.demo
+    ports:
+      - "7862:7862"
+    volumes:
+      - ./demo.py:/app/demo.py  # Mount demo.py for live updates
+      - ./macaque.h5ad:/app/macaque.h5ad
+    restart: unless-stopped
+
 # Week 1: Basic multi-service setup with Docker
 # Usage: docker-compose up --build 

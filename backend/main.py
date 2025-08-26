@@ -1,5 +1,6 @@
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 import uuid
 import os
 import json
@@ -28,6 +29,9 @@ def init_directories():
 
 # Initialize on startup
 init_directories()
+
+# Mount static files for serving output files
+app.mount("/outputs", StaticFiles(directory="outputs"), name="outputs")
 
 # CORS settings (for frontend connection)
 app.add_middleware(
