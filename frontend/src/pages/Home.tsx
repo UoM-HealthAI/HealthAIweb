@@ -35,19 +35,13 @@ function Home() {
         <div className="card">
           <h2>Supported File Formats</h2>
           <div style={{marginTop: '1rem'}}>
-            <div style={{display: 'flex', alignItems: 'center', marginBottom: '0.8rem', padding: '0.5rem', background: '#f8f9fa', borderRadius: '4px'}}>
-              <span style={{color: '#28a745', fontWeight: 'bold', marginRight: '0.5rem'}}>?</span>
-              <div>
-                <strong>.h5ad</strong> - AnnData format
-                <div style={{fontSize: '0.9rem', color: '#666'}}>Recommended for single-cell data</div>
-              </div>
+            <div style={{padding: '0.8rem', background: '#f8f9fa', borderRadius: '6px', marginBottom: '0.8rem', borderLeft: '4px solid #28a745'}}>
+              <div style={{fontWeight: 'bold', color: '#28a745', marginBottom: '0.3rem'}}>.h5ad - AnnData format</div>
+              <div style={{fontSize: '0.9rem', color: '#666'}}>Recommended for single-cell data</div>
             </div>
-            <div style={{display: 'flex', alignItems: 'center', padding: '0.5rem', background: '#f8f9fa', borderRadius: '4px'}}>
-              <span style={{color: '#17a2b8', fontWeight: 'bold', marginRight: '0.5rem'}}>?</span>
-              <div>
-                <strong>.csv</strong> - CSV format
-                <div style={{fontSize: '0.9rem', color: '#666'}}>Genes as rows, cells as columns</div>
-              </div>
+            <div style={{padding: '0.8rem', background: '#f8f9fa', borderRadius: '6px', borderLeft: '4px solid #17a2b8'}}>
+              <div style={{fontWeight: 'bold', color: '#17a2b8', marginBottom: '0.3rem'}}>.csv - CSV format</div>
+              <div style={{fontSize: '0.9rem', color: '#666'}}>Genes as rows, cells as columns</div>
             </div>
           </div>
         </div>
@@ -55,12 +49,9 @@ function Home() {
         <div className="card">
           <h2>Available Models</h2>
           <div style={{marginTop: '1rem'}}>
-            <div style={{display: 'flex', alignItems: 'center', marginBottom: '0.8rem', padding: '0.5rem', background: '#f8f9fa', borderRadius: '4px'}}>
-              <span style={{color: '#007bff', fontWeight: 'bold', marginRight: '0.5rem'}}>AI</span>
-              <div>
-                <strong>scVI Model</strong>
-                <div style={{fontSize: '0.9rem', color: '#666'}}>Dimensionality reduction & batch correction</div>
-              </div>
+            <div style={{padding: '0.8rem', background: '#f8f9fa', borderRadius: '6px', marginBottom: '0.8rem', borderLeft: '4px solid #007bff'}}>
+              <div style={{fontWeight: 'bold', color: '#007bff', marginBottom: '0.3rem'}}>scVI Model</div>
+              <div style={{fontSize: '0.9rem', color: '#666'}}>Dimensionality reduction & batch correction</div>
             </div>
             <div style={{padding: '0.5rem', background: '#fff3cd', borderRadius: '4px', border: '1px solid #ffeaa7'}}>
               <span style={{color: '#856404', fontSize: '0.9rem'}}>More models coming soon!</span>
@@ -70,12 +61,20 @@ function Home() {
 
         <div className="card">
           <h2>Important Notes</h2>
-          <ul style={{marginTop: '1rem', paddingLeft: '1rem'}}>
-            <li style={{marginBottom: '0.5rem'}}><strong>File Size:</strong> Maximum 500MB</li>
-            <li style={{marginBottom: '0.5rem'}}><strong>Processing Time:</strong> 2-10 minutes depending on data size</li>
-            <li style={{marginBottom: '0.5rem'}}><strong>Data Privacy:</strong> Files are processed securely and not stored permanently</li>
-            <li><strong>Results:</strong> Download your results promptly as they may be cleaned up after 24 hours</li>
-          </ul>
+          <div style={{marginTop: '1rem'}}>
+            <div style={{padding: '0.6rem', marginBottom: '0.6rem', background: '#f8f9fa', borderRadius: '4px', borderLeft: '3px solid #dc3545'}}>
+              <strong style={{color: '#dc3545'}}>File Size:</strong> Maximum 500MB
+            </div>
+            <div style={{padding: '0.6rem', marginBottom: '0.6rem', background: '#f8f9fa', borderRadius: '4px', borderLeft: '3px solid #ffc107'}}>
+              <strong style={{color: '#e67e22'}}>Processing Time:</strong> 2-10 minutes depending on data size
+            </div>
+            <div style={{padding: '0.6rem', marginBottom: '0.6rem', background: '#f8f9fa', borderRadius: '4px', borderLeft: '3px solid #198754'}}>
+              <strong style={{color: '#198754'}}>Data Privacy:</strong> Files are processed securely and not stored permanently
+            </div>
+            <div style={{padding: '0.6rem', background: '#f8f9fa', borderRadius: '4px', borderLeft: '3px solid #0dcaf0'}}>
+              <strong style={{color: '#0dcaf0'}}>Results:</strong> Download your results promptly as they may be cleaned up after 24 hours
+            </div>
+          </div>
         </div>
       </div>
     </div>

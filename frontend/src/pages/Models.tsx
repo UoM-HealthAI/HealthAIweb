@@ -9,6 +9,13 @@ interface Model {
 
 const scviDocumentation = {
   overview: "The scVI (Single-cell Variational Inference) model is a deep learning tool for single-cell RNA sequencing data analysis. It performs dimensionality reduction, batch correction, and data integration.",
+  simpleExplanation: "scVI is an AI model that integrates and organizes single-cell data from multiple experiments. It helps researchers easily analyze complex biological data by removing technical differences and revealing true biological patterns.",
+  whenToUse: [
+    "When you want to compare data from different laboratories or experiments",
+    "When you need to remove experimental batch effects and focus on biological signals", 
+    "When you want to visualize high-dimensional data in 2D plots",
+    "When you need to identify cell types or track developmental processes"
+  ],
   features: [
     "Dimensionality Reduction: Transforms high-dimensional gene expression data into low-dimensional representation",
     "Batch Correction: Removes technical batch effects while preserving biological variation", 
@@ -216,10 +223,26 @@ function Models() {
                     <h4 style={{color: '#495057', marginBottom: '1rem'}}>scVI Model Documentation</h4>
                     
                     <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem'}}>
-                      {/* Overview */}
+                      {/* Simple Explanation */}
                       <div>
-                        <h5 style={{color: '#007bff', marginBottom: '0.5rem'}}>Overview</h5>
-                        <p style={{fontSize: '0.9rem', lineHeight: '1.5'}}>{scviDocumentation.overview}</p>
+                        <h5 style={{color: '#28a745', marginBottom: '0.5rem'}}>What is this model?</h5>
+                        <p style={{fontSize: '0.95rem', lineHeight: '1.6', fontWeight: '500'}}>{scviDocumentation.simpleExplanation}</p>
+                      </div>
+
+                      {/* When to Use */}
+                      <div>
+                        <h5 style={{color: '#28a745', marginBottom: '0.5rem'}}>When should I use this?</h5>
+                        <ul style={{fontSize: '0.9rem', lineHeight: '1.5', paddingLeft: '1rem'}}>
+                          {scviDocumentation.whenToUse.map((useCase, idx) => (
+                            <li key={idx} style={{marginBottom: '0.4rem'}}>{useCase}</li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      {/* Technical Overview */}
+                      <div>
+                        <h5 style={{color: '#007bff', marginBottom: '0.5rem'}}>Technical Overview</h5>
+                        <p style={{fontSize: '0.85rem', lineHeight: '1.5', color: '#666'}}>{scviDocumentation.overview}</p>
                       </div>
                       
                       {/* Features */}

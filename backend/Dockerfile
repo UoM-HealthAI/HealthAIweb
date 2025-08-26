@@ -22,5 +22,9 @@ COPY . .
 # Expose port
 EXPOSE 8000
 
-# Run development server
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"] 
+# Set Python environment variables for better development experience
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+
+# Run development server with enhanced reload options
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--reload-dir", "/app", "--log-level", "info"] 

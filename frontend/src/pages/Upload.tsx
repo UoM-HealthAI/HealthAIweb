@@ -7,7 +7,7 @@ function Upload() {
   const [selectedModel, setSelectedModel] = useState('scvi_model');
   const [parameters, setParameters] = useState({
     n_latent: 10,
-    n_epochs: 50  // Reduced for faster testing
+    n_epochs: 400  // Default as per model specification
   });
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -224,7 +224,7 @@ function Upload() {
               <label style={{display: 'block', marginBottom: '0.5rem'}}>
                 <strong>Latent Dimensions</strong>
                 <span style={{color: '#666', fontSize: '0.9rem', display: 'block'}}>
-                  Lower-dimensional representation size (5-30)
+                  Lower-dimensional representation size (5-50)
                 </span>
               </label>
               <input
@@ -232,12 +232,12 @@ function Upload() {
                 value={parameters.n_latent}
                 onChange={(e) => handleParameterChange('n_latent', parseInt(e.target.value))}
                 min="5"
-                max="30"
+                max="50"
                 className="form-control"
                 style={{fontSize: '1.1rem', padding: '0.75rem'}}
               />
               <small style={{color: '#666', fontSize: '0.8rem'}}>
-                Default: 10. Higher values (15-20) for complex data, lower (5-8) for simple data or quick testing.
+                Default: 10. Higher values (15-50) for complex data, lower (5-8) for simple data or quick testing.
               </small>
             </div>
             
@@ -250,20 +250,20 @@ function Upload() {
               <label style={{display: 'block', marginBottom: '0.5rem'}}>
                 <strong>Training Epochs</strong>
                 <span style={{color: '#666', fontSize: '0.9rem', display: 'block'}}>
-                  Number of training iterations (50-800)
+                  Number of training iterations (100-1000)
                 </span>
               </label>
               <input
                 type="number"
                 value={parameters.n_epochs}
                 onChange={(e) => handleParameterChange('n_epochs', parseInt(e.target.value))}
-                min="50"
-                max="800"
+                min="100"
+                max="1000"
                 className="form-control"
                 style={{fontSize: '1.1rem', padding: '0.75rem'}}
               />
               <small style={{color: '#666', fontSize: '0.8rem'}}>
-                Default: 400. Use 100-200 for quick testing, 300-500 for standard analysis, 500-800 for high quality.
+                Default: 400. Use 100-200 for quick testing, 300-500 for standard analysis, 500-1000 for high quality.
               </small>
             </div>
           </div>
@@ -279,7 +279,8 @@ function Upload() {
               <strong>Parameter Guidelines:</strong><br/>
               • <strong>Quick Testing:</strong> Latent: 5-8, Epochs: 100-200 (~2-5 min)<br/>
               • <strong>Standard Analysis:</strong> Latent: 10-15, Epochs: 300-500 (~5-15 min)<br/>
-              • <strong>High Quality:</strong> Latent: 15-20, Epochs: 500-800 (~15-30 min)
+              • <strong>High Quality:</strong> Latent: 15-30, Epochs: 500-800 (~15-30 min)<br/>
+              • <strong>Research Grade:</strong> Latent: 30-50, Epochs: 800-1000 (~30-60 min)
             </p>
           </div>
         </div>
