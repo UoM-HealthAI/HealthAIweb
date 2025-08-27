@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_CONFIG, buildApiUrl } from '../config/api';
 
 // Type definition for model information (TypeScript)
 interface Model {
@@ -7,56 +8,16 @@ interface Model {
   status: string;
 }
 
-const scviDocumentation = {
-  overview: "The scVI (Single-cell Variational Inference) model is a deep learning tool for single-cell RNA sequencing data analysis. It performs dimensionality reduction, batch correction, and data integration.",
-  simpleExplanation: "scVI is an AI model that integrates and organizes single-cell data from multiple experiments. It helps researchers easily analyze complex biological data by removing technical differences and revealing true biological patterns.",
-  whenToUse: [
-    "When you want to compare data from different laboratories or experiments",
-    "When you need to remove experimental batch effects and focus on biological signals", 
-    "When you want to visualize high-dimensional data in 2D plots",
-    "When you need to identify cell types or track developmental processes"
-  ],
-  features: [
-    "Dimensionality Reduction: Transforms high-dimensional gene expression data into low-dimensional representation",
-    "Batch Correction: Removes technical batch effects while preserving biological variation", 
-    "Data Integration: Combines multiple datasets for joint analysis",
-    "Noise Modeling: Handles dropout and technical noise in scRNA-seq data"
-  ],
-  inputRequirements: {
-    formats: [".h5ad files (AnnData format) - Recommended", ".csv files (genes as rows, cells as columns)"],
-    requirements: ["Maximum file size: 500MB", "Minimum: 100 cells, 500 genes", "Raw or normalized count data"]
-  },
-  parameters: {
-    userConfigurable: [
-      "Latent Dimensions (default: 10, range: 5-50)",
-      "Training Epochs (default: 400, range: 100-1000)"
-    ],
-    fixed: ["Learning Rate: 0.001", "Batch Size: 128"]
-  },
-  outputs: {
-    visualizations: ["umap_plot.png - 2D UMAP visualization", "loss_curve.png - Training convergence plot"],
-    dataFiles: [
-      "latent_representation.csv - Low-dimensional cell embeddings",
-      "processed_data.h5ad - Batch-corrected expression matrix", 
-      "model_summary.json - Analysis summary"
-    ]
-  },
-  usage: [
-    "Prepare Data: Ensure correct format (.h5ad or .csv)",
-    "Upload: Select scVI model and upload your file",
-    "Configure: Adjust parameters if needed (default values work well)",
-    "Run: Execute analysis and wait for completion",
-    "Download: View results and download processed files"
-  ],
-  citation: "Lopez, R., et al. (2018). Deep generative modeling for single-cell transcriptomics. Nature Methods, 15(12), 1053-1058.",
-  technicalDetails: [
-    "Framework: scvi-tools",
-    "Backend: PyTorch", 
-    "Method: Variational Autoencoder",
-    "Memory: 2-4GB RAM for typical datasets",
-    "Processing Time: 2-10 minutes depending on data size"
-  ]
-};
+// Type definition for model documentation
+interface ModelDocumentation {
+  simple_explanation: string;
+  when_to_use: string[];
+  features: string[];
+  technical_details: string[];
+  citation: string;
+}
+
+// Model documentation is now loaded dynamically from the backend API
 
 function Models() {
   // State: information that the component needs to remember
@@ -64,6 +25,7 @@ function Models() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedDocs, setExpandedDocs] = useState<{[key: string]: boolean}>({});
+  const [modelDocs, setModelDocs] = useState<{[key: string]: ModelDocumentation}>({});
 
   // Function to fetch model list from backend
   useEffect(() => {
@@ -72,22 +34,35 @@ function Models() {
 
   const fetchModels = async () => {
     try {
-      console.log('Fetching model list from backend...');
-      const response = await fetch('/models');
+      const response = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.MODELS));
       
       if (!response.ok) {
-        throw new Error('Could not fetch model list');
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
       
       const data = await response.json();
-      console.log('Received data:', data);
-      
-      setModels(data.models || []);
+      setModels(data.models);
       setLoading(false);
     } catch (err) {
-      console.error('Error occurred:', err);
+      console.error('Error fetching models:', err);
       setError(err instanceof Error ? err.message : 'Unknown error');
       setLoading(false);
+    }
+  };
+
+  // Function to load model documentation
+  const loadModelDocumentation = async (modelId: string) => {
+    try {
+      const response = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.MODEL_DOCUMENTATION(modelId)));
+      if (response.ok) {
+        const data = await response.json();
+        setModelDocs(prev => ({
+          ...prev,
+          [modelId]: data.documentation
+        }));
+      }
+    } catch (error) {
+      console.error('Failed to load documentation for', modelId, error);
     }
   };
 
@@ -96,259 +71,195 @@ function Models() {
       ...prev,
       [modelId]: !prev[modelId]
     }));
+    
+    // Load documentation if not already loaded
+    if (!modelDocs[modelId]) {
+      loadModelDocumentation(modelId);
+    }
   };
 
   // Screen to show while loading
   if (loading) {
     return (
       <div>
-        <h1 className="page-title">Available Models</h1>
-        <div className="card">
-          <p>Loading models...</p>
-        </div>
+        <h2>Available AI Models</h2>
+        <p>Loading models...</p>
       </div>
     );
   }
 
-  // Screen to show when error occurs
+  // Screen to show if there's an error
   if (error) {
     return (
       <div>
-        <h1 className="page-title">Available Models</h1>
-        <div className="card">
-          <p style={{color: 'red'}}>Error: {error}</p>
-          <button className="btn btn-primary" onClick={fetchModels}>
-            Retry
-          </button>
+        <h2>Available AI Models</h2>
+        <div className="error" style={{color: 'red', padding: '1rem', border: '1px solid red', borderRadius: '4px'}}>
+          <strong>Error loading models:</strong> {error}
+          <br />
+          <button onClick={fetchModels} style={{marginTop: '0.5rem'}}>Retry</button>
         </div>
       </div>
     );
   }
 
+  // Main screen when models are loaded successfully
   return (
     <div>
-      <div style={{textAlign: 'center', marginBottom: '2rem'}}>
-        <h1 className="page-title">Available AI Models</h1>
-        <p style={{fontSize: '1.1rem', color: '#666'}}>
-          Choose the best model for your single-cell RNA sequencing analysis
-        </p>
-      </div>
+      <h2>Available AI Models</h2>
+      <p>Choose from our collection of pre-trained AI models for your data analysis needs.</p>
       
       {models.length === 0 ? (
-        <div className="card" style={{textAlign: 'center', padding: '2rem'}}>
-          <h3>No Models Available</h3>
-          <p>Please check back later or contact the administrator.</p>
-        </div>
+        <p>No models available at the moment.</p>
       ) : (
         <>
-          <div className="models-grid">
+          <div style={{display: 'grid', gap: '1.5rem'}}>
             {models.map((model) => (
-              <div key={model.id} className="card" style={{
-                border: model.status === 'found' ? '2px solid #28a745' : '2px solid #dc3545',
-                position: 'relative'
-              }}>
-                {model.status === 'found' && (
-                  <div style={{
-                    position: 'absolute',
-                    top: '10px',
-                    right: '10px',
-                    background: '#28a745',
-                    color: 'white',
-                    padding: '4px 8px',
-                    borderRadius: '12px',
-                    fontSize: '0.8rem',
-                    fontWeight: 'bold'
-                  }}>
-                    READY
-                  </div>
-                )}
-                
-                <div style={{marginBottom: '1rem'}}>
-                  <h3 style={{marginBottom: '0.5rem', display: 'flex', alignItems: 'center'}}>
-                    {model.name}
-                  </h3>
-                  <div style={{
-                    padding: '0.5rem',
-                    background: model.status === 'found' ? '#d4edda' : '#f8d7da',
-                    borderRadius: '4px',
-                    marginBottom: '1rem'
-                  }}>
-                    <span style={{
-                      color: model.status === 'found' ? '#155724' : '#721c24',
-                      fontWeight: 'bold'
-                    }}>
-                      Status: {model.status === 'found' ? 'Available' : 'Unavailable'}
+              <div key={model.id} className="card" style={{border: '1px solid #ddd', borderRadius: '8px', overflow: 'hidden'}}>
+                <div style={{padding: '1.5rem'}}>
+                  {/* Header with model name and status */}
+                  <div style={{marginBottom: '1.5rem'}}>
+                    <h3 style={{margin: '0 0 0.75rem 0', color: '#333', fontSize: '1.5rem'}}>{model.name}</h3>
+                    <span 
+                      className={model.status === 'found' ? 'status-badge status-found' : 'status-badge status-not-found'}
+                      style={{
+                        padding: '0.4rem 1rem',
+                        borderRadius: '20px',
+                        fontSize: '0.85rem',
+                        fontWeight: '600',
+                        backgroundColor: model.status === 'found' ? '#d4edda' : '#f8d7da',
+                        color: model.status === 'found' ? '#155724' : '#721c24',
+                        border: model.status === 'found' ? '1px solid #c3e6cb' : '1px solid #f5c6cb',
+                        display: 'inline-block'
+                      }}
+                    >
+                      {model.status === 'found' ? 'Available' : 'Not Available'}
                     </span>
                   </div>
                   
-                  {model.id === 'scvi_model' && (
-                    <div style={{marginBottom: '1rem', fontSize: '0.95rem', color: '#666'}}>
-                      <p><strong>Features:</strong></p>
-                      <ul style={{marginLeft: '1rem', marginTop: '0.5rem'}}>
-                        <li>Dimensionality reduction</li>
-                        <li>Batch effect correction</li>
-                        <li>Data integration</li>
-                        <li>Noise modeling</li>
-                      </ul>
+                  {/* Description */}
+                  <p style={{margin: '0 0 1.5rem 0', color: '#666', fontSize: '1rem', lineHeight: '1.5'}}>
+                    Click "Show Documentation" to learn about this model's capabilities and usage, or "Use Model" to start analyzing your data.
+                  </p>
+                  
+                  {/* Action buttons - consistently aligned */}
+                  <div style={{
+                    display: 'flex', 
+                    gap: '1rem', 
+                    alignItems: 'center',
+                    flexWrap: 'wrap'
+                  }}>
+                    <button
+                      onClick={() => toggleDocumentation(model.id)}
+                      style={{
+                        padding: '0.75rem 1.5rem',
+                        backgroundColor: expandedDocs[model.id] ? '#6c757d' : '#17a2b8',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontSize: '0.95rem',
+                        fontWeight: '500',
+                        minWidth: '160px',
+                        transition: 'background-color 0.2s ease'
+                      }}
+                    >
+                      {expandedDocs[model.id] ? 'Hide Documentation' : 'Show Documentation'}
+                    </button>
+                    
+                    <a
+                      href={model.status === 'found' ? `/upload?model=${model.id}` : '#'}
+                      style={{
+                        padding: '0.75rem 1.5rem',
+                        backgroundColor: model.status === 'found' ? '#007bff' : '#6c757d',
+                        color: 'white',
+                        textDecoration: 'none',
+                        borderRadius: '6px',
+                        fontSize: '0.95rem',
+                        fontWeight: '500',
+                        cursor: model.status === 'found' ? 'pointer' : 'not-allowed',
+                        minWidth: '120px',
+                        textAlign: 'center',
+                        display: 'inline-block',
+                        transition: 'background-color 0.2s ease'
+                      }}
+                    >
+                      {model.status === 'found' ? 'Use Model' : 'Unavailable'}
+                    </a>
+                  </div>
+                  
+                  {/* Inline Documentation */}
+                  {expandedDocs[model.id] && modelDocs[model.id] && (
+                    <div style={{
+                      marginTop: '1rem', 
+                      padding: '1.5rem', 
+                      background: '#f8f9fa', 
+                      borderRadius: '8px',
+                      border: '1px solid #e9ecef'
+                    }}>
+                      <h4 style={{color: '#495057', marginBottom: '1rem'}}>Model Documentation</h4>
+                      
+                      <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem'}}>
+                        {/* Simple Explanation */}
+                        <div>
+                          <h5 style={{color: '#28a745', marginBottom: '0.5rem'}}>What is this model?</h5>
+                          <p style={{fontSize: '0.95rem', lineHeight: '1.6', fontWeight: '500'}}>{modelDocs[model.id].simple_explanation}</p>
+                        </div>
+
+                        {/* When to Use */}
+                        <div>
+                          <h5 style={{color: '#28a745', marginBottom: '0.5rem'}}>When should I use this?</h5>
+                          <ul style={{fontSize: '0.9rem', lineHeight: '1.5', paddingLeft: '1rem'}}>
+                            {modelDocs[model.id].when_to_use.map((useCase, idx) => (
+                              <li key={idx} style={{marginBottom: '0.4rem'}}>{useCase}</li>
+                            ))}
+                          </ul>
+                        </div>
+
+                        {/* Features */}
+                        <div>
+                          <h5 style={{color: '#007bff', marginBottom: '0.5rem'}}>Features</h5>
+                          <ul style={{fontSize: '0.9rem', lineHeight: '1.4', paddingLeft: '1rem'}}>
+                            {modelDocs[model.id].features.map((feature, idx) => (
+                              <li key={idx} style={{marginBottom: '0.3rem'}}>{feature}</li>
+                            ))}
+                          </ul>
+                        </div>
+                        
+                        {/* Technical Details */}
+                        <div>
+                          <h5 style={{color: '#007bff', marginBottom: '0.5rem'}}>Technical Details</h5>
+                          <ul style={{fontSize: '0.85rem', lineHeight: '1.4', paddingLeft: '1rem'}}>
+                            {modelDocs[model.id].technical_details.map((detail, idx) => (
+                              <li key={idx} style={{marginBottom: '0.3rem'}}>{detail}</li>
+                            ))}
+                          </ul>
+                        </div>
+                        
+                        {/* Citation */}
+                        <div>
+                          <h5 style={{color: '#6c757d', marginBottom: '0.5rem'}}>Citation</h5>
+                          <p style={{fontSize: '0.85rem', color: '#666', fontStyle: 'italic'}}>
+                            {modelDocs[model.id].citation}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Loading state for documentation */}
+                  {expandedDocs[model.id] && !modelDocs[model.id] && (
+                    <div style={{
+                      marginTop: '1rem', 
+                      padding: '1.5rem', 
+                      background: '#f8f9fa', 
+                      borderRadius: '8px',
+                      border: '1px solid #e9ecef',
+                      textAlign: 'center'
+                    }}>
+                      <p style={{color: '#666'}}>Loading documentation...</p>
                     </div>
                   )}
                 </div>
-                
-                <div style={{display: 'flex', gap: '0.5rem', flexWrap: 'wrap'}}>
-                  <button 
-                    onClick={() => toggleDocumentation(model.id)}
-                    className="btn btn-secondary"
-                    style={{flex: '1', minWidth: '120px'}}
-                  >
-                    {expandedDocs[model.id] ? 'Hide Documentation' : 'Show Documentation'}
-                  </button>
-                  <a 
-                    href={`/upload?model=${model.id}`}
-                    className="btn btn-primary"
-                    style={{flex: '1', textAlign: 'center', textDecoration: 'none', minWidth: '120px'}}
-                  >
-                    {model.status === 'found' ? 'Use Model' : 'Unavailable'}
-                  </a>
-                </div>
-                
-                {/* Inline Documentation */}
-                {expandedDocs[model.id] && model.id === 'scvi_model' && (
-                  <div style={{
-                    marginTop: '1rem', 
-                    padding: '1.5rem', 
-                    background: '#f8f9fa', 
-                    borderRadius: '8px',
-                    border: '1px solid #e9ecef'
-                  }}>
-                    <h4 style={{color: '#495057', marginBottom: '1rem'}}>scVI Model Documentation</h4>
-                    
-                    <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem'}}>
-                      {/* Simple Explanation */}
-                      <div>
-                        <h5 style={{color: '#28a745', marginBottom: '0.5rem'}}>What is this model?</h5>
-                        <p style={{fontSize: '0.95rem', lineHeight: '1.6', fontWeight: '500'}}>{scviDocumentation.simpleExplanation}</p>
-                      </div>
-
-                      {/* When to Use */}
-                      <div>
-                        <h5 style={{color: '#28a745', marginBottom: '0.5rem'}}>When should I use this?</h5>
-                        <ul style={{fontSize: '0.9rem', lineHeight: '1.5', paddingLeft: '1rem'}}>
-                          {scviDocumentation.whenToUse.map((useCase, idx) => (
-                            <li key={idx} style={{marginBottom: '0.4rem'}}>{useCase}</li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      {/* Technical Overview */}
-                      <div>
-                        <h5 style={{color: '#007bff', marginBottom: '0.5rem'}}>Technical Overview</h5>
-                        <p style={{fontSize: '0.85rem', lineHeight: '1.5', color: '#666'}}>{scviDocumentation.overview}</p>
-                      </div>
-                      
-                      {/* Features */}
-                      <div>
-                        <h5 style={{color: '#007bff', marginBottom: '0.5rem'}}>Features</h5>
-                        <ul style={{fontSize: '0.9rem', lineHeight: '1.4', paddingLeft: '1rem'}}>
-                          {scviDocumentation.features.map((feature, idx) => (
-                            <li key={idx} style={{marginBottom: '0.3rem'}}>{feature}</li>
-                          ))}
-                        </ul>
-                      </div>
-                      
-                      {/* Input Requirements */}
-                      <div>
-                        <h5 style={{color: '#007bff', marginBottom: '0.5rem'}}>Input Requirements</h5>
-                        <div style={{marginBottom: '0.8rem'}}>
-                          <strong style={{fontSize: '0.9rem'}}>Supported Formats:</strong>
-                          <ul style={{fontSize: '0.85rem', marginTop: '0.3rem', paddingLeft: '1rem'}}>
-                            {scviDocumentation.inputRequirements.formats.map((format, idx) => (
-                              <li key={idx}>{format}</li>
-                            ))}
-                          </ul>
-                        </div>
-                        <div>
-                          <strong style={{fontSize: '0.9rem'}}>Requirements:</strong>
-                          <ul style={{fontSize: '0.85rem', marginTop: '0.3rem', paddingLeft: '1rem'}}>
-                            {scviDocumentation.inputRequirements.requirements.map((req, idx) => (
-                              <li key={idx}>{req}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      </div>
-                      
-                      {/* Parameters */}
-                      <div>
-                        <h5 style={{color: '#007bff', marginBottom: '0.5rem'}}>Parameters</h5>
-                        <div style={{marginBottom: '0.8rem'}}>
-                          <strong style={{fontSize: '0.9rem'}}>User Configurable:</strong>
-                          <ul style={{fontSize: '0.85rem', marginTop: '0.3rem', paddingLeft: '1rem'}}>
-                            {scviDocumentation.parameters.userConfigurable.map((param, idx) => (
-                              <li key={idx}>{param}</li>
-                            ))}
-                          </ul>
-                        </div>
-                        <div>
-                          <strong style={{fontSize: '0.9rem'}}>Fixed Parameters:</strong>
-                          <ul style={{fontSize: '0.85rem', marginTop: '0.3rem', paddingLeft: '1rem'}}>
-                            {scviDocumentation.parameters.fixed.map((param, idx) => (
-                              <li key={idx}>{param}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      </div>
-                      
-                      {/* Output Files */}
-                      <div>
-                        <h5 style={{color: '#007bff', marginBottom: '0.5rem'}}>Output Files</h5>
-                        <div style={{marginBottom: '0.8rem'}}>
-                          <strong style={{fontSize: '0.9rem'}}>Visualizations:</strong>
-                          <ul style={{fontSize: '0.85rem', marginTop: '0.3rem', paddingLeft: '1rem'}}>
-                            {scviDocumentation.outputs.visualizations.map((viz, idx) => (
-                              <li key={idx}>{viz}</li>
-                            ))}
-                          </ul>
-                        </div>
-                        <div>
-                          <strong style={{fontSize: '0.9rem'}}>Data Files:</strong>
-                          <ul style={{fontSize: '0.85rem', marginTop: '0.3rem', paddingLeft: '1rem'}}>
-                            {scviDocumentation.outputs.dataFiles.map((file, idx) => (
-                              <li key={idx}>{file}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      </div>
-                      
-                      {/* Usage Steps */}
-                      <div>
-                        <h5 style={{color: '#007bff', marginBottom: '0.5rem'}}>Usage Steps</h5>
-                        <ol style={{fontSize: '0.9rem', lineHeight: '1.4', paddingLeft: '1rem'}}>
-                          {scviDocumentation.usage.map((step, idx) => (
-                            <li key={idx} style={{marginBottom: '0.3rem'}}>{step}</li>
-                          ))}
-                        </ol>
-                      </div>
-                    </div>
-                    
-                    {/* Citation and Technical Details */}
-                    <div style={{marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid #dee2e6'}}>
-                      <div style={{marginBottom: '1rem'}}>
-                        <h5 style={{color: '#007bff', marginBottom: '0.5rem'}}>Citation</h5>
-                        <p style={{fontSize: '0.85rem', fontStyle: 'italic', background: '#fff', padding: '0.5rem', borderRadius: '4px'}}>
-                          {scviDocumentation.citation}
-                        </p>
-                      </div>
-                      
-                      <div>
-                        <h5 style={{color: '#007bff', marginBottom: '0.5rem'}}>Technical Details</h5>
-                        <ul style={{fontSize: '0.85rem', lineHeight: '1.4', paddingLeft: '1rem', columns: 2}}>
-                          {scviDocumentation.technicalDetails.map((detail, idx) => (
-                            <li key={idx} style={{marginBottom: '0.3rem', breakInside: 'avoid'}}>{detail}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                )}
               </div>
             ))}
           </div>

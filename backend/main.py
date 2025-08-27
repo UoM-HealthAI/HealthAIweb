@@ -34,9 +34,12 @@ init_directories()
 app.mount("/outputs", StaticFiles(directory="outputs"), name="outputs")
 
 # CORS settings (for frontend connection)
+# Get allowed origins from environment variable for deployment
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # React development server
+    allow_origins=ALLOWED_ORIGINS,  # Frontend URLs
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -88,6 +91,30 @@ async def get_models():
         "count": len(models),
         "models": models
     }
+
+@app.get("/models/{model_id}/documentation")
+async def get_model_documentation(model_id: str):
+    """Get documentation for a specific model"""
+    try:
+        model_executor = get_model_executor()
+        if model_id not in model_executor.available_models:
+            raise HTTPException(status_code=404, detail=f"Model '{model_id}' not found")
+        
+        model_info = model_executor.available_models[model_id]
+        config = model_info["config"]
+        documentation = config.get("documentation", {})
+        
+        if not documentation:
+            raise HTTPException(status_code=404, detail=f"No documentation found for model '{model_id}'")
+        
+        return {
+            "status": "success",
+            "model_id": model_id,
+            "documentation": documentation
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving documentation: {str(e)}")
 
 # Week 3: File upload and prediction endpoints
 @app.post("/predict/{model_id}")
@@ -307,4 +334,5 @@ async def list_all_tasks():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000) 
+    port = int(os.getenv("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port) 

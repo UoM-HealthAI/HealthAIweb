@@ -48,4 +48,25 @@ interface:
     - "scvi-tools>=0.20.0"
     - "scanpy>=1.9.0"
     - "pandas>=1.5.0"
-    - "matplotlib>=3.6.0" 
+    - "matplotlib>=3.6.0"
+
+# Documentation for user-friendly display
+documentation:
+  simple_explanation: "scVI is an AI model that integrates and organizes single-cell data from multiple experiments. It helps researchers easily analyze complex biological data by removing technical differences and revealing true biological patterns."
+  when_to_use:
+    - "When you want to compare data from different laboratories or experiments"
+    - "When you need to remove experimental batch effects and focus on biological signals"
+    - "When you want to visualize high-dimensional data in 2D plots"
+    - "When you need to identify cell types or track developmental processes"
+  features:
+    - "Dimensionality Reduction: Transforms high-dimensional gene expression data into low-dimensional representation"
+    - "Batch Correction: Removes technical batch effects while preserving biological variation"
+    - "Data Integration: Combines multiple datasets for joint analysis"
+    - "Noise Modeling: Handles dropout and technical noise in scRNA-seq data"
+  technical_details:
+    - "Framework: scvi-tools"
+    - "Backend: PyTorch"
+    - "Method: Variational Autoencoder"
+    - "Memory: 2-4GB RAM for typical datasets"
+    - "Processing Time: 2-10 minutes depending on data size"
+  citation: "Lopez, R., et al. (2018). Deep generative modeling for single-cell transcriptomics. Nature Methods, 15(12), 1053-1058." 
