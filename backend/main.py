@@ -39,16 +39,7 @@ frontend_build_path = Path("../frontend/build")
 if frontend_build_path.exists():
     app.mount("/static", StaticFiles(directory="../frontend/build/static"), name="static")
     
-    # Serve React app for all other routes (SPA routing)
-    @app.get("/{full_path:path}")
-    async def serve_react_app(full_path: str):
-        """Serve React app for frontend routes"""
-        # API routes should not be caught here
-        if full_path.startswith(("api/", "docs", "redoc", "openapi.json")):
-            raise HTTPException(status_code=404, detail="API endpoint not found")
-        
-        # Serve index.html for all other routes (React Router will handle)
-        return FileResponse("../frontend/build/index.html")
+
 else:
     print("Frontend build directory not found. Running in development mode.")
 
@@ -355,6 +346,16 @@ async def list_all_tasks():
         "total_tasks": len(tasks),
         "tasks": tasks
     }
+
+# Serve React app for frontend routes (must be last!)
+frontend_build_path = Path("../frontend/build")
+if frontend_build_path.exists():
+    @app.get("/{full_path:path}")
+    async def serve_react_app(full_path: str):
+        """Serve React app for frontend routes - this catches all unmatched routes"""
+        # At this point, all API routes have been checked and didn't match
+        # So this must be a frontend route - serve index.html
+        return FileResponse("../frontend/build/index.html")
 
 if __name__ == "__main__":
     import uvicorn
