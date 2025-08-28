@@ -16,14 +16,26 @@ def scan_models() -> List[Dict[str, Any]]:
     print("Starting model scan...")
     
     # Step 1: Find the model_registry folder
-    # In Docker container, it's mounted at /app/model_registry
-    models_dir = "/app/model_registry"
+    # Try multiple possible locations
+    possible_paths = [
+        "/app/model_registry",  # Docker container
+        "./model_registry",     # Current directory (Render)
+        "../model_registry",    # Parent directory
+        "/opt/render/project/src/model_registry"  # Render specific
+    ]
+    
+    models_dir = None
+    for path in possible_paths:
+        if os.path.exists(path):
+            models_dir = path
+            break
     
     print(f"Looking for models in: {models_dir}")
     
     # Step 2: Check if the folder exists
-    if not os.path.exists(models_dir):
-        print("Model registry folder not found!")
+    if not models_dir or not os.path.exists(models_dir):
+        print("Model registry folder not found in any of the expected locations!")
+        print(f"Checked paths: {possible_paths}")
         return []
     
     # Step 3: Find all folders inside model_registry

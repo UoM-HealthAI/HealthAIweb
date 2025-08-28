@@ -79,12 +79,17 @@ def _make_paths_relative(file_paths: dict, base_dir: str = "outputs") -> dict:
 
 @app.get("/")
 async def root():
-    """Basic health check endpoint"""
-    return {
-        "message": "HealthAI Web Platform API", 
-        "status": "running",
-        "version": "0.1.0"
-    }
+    """Serve React app for root path"""
+    frontend_build_path = Path("../frontend/build")
+    if frontend_build_path.exists():
+        return FileResponse("../frontend/build/index.html")
+    else:
+        # Development mode fallback
+        return {
+            "message": "HealthAI Web Platform API", 
+            "status": "running",
+            "version": "0.1.0"
+        }
 
 @app.get("/health")
 async def health_check():
