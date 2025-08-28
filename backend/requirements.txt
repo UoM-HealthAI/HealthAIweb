@@ -13,13 +13,14 @@ numpy==1.25.2
 # Configuration files
 PyYAML==6.0.1
 
-# AI/ML libraries for model execution  
-scvi-tools==0.20.3
-scanpy==1.9.3
+# AI/ML libraries for model execution (optimized for deployment)
+--find-links https://download.pytorch.org/whl/cpu/torch_stable.html
+torch==2.0.1+cpu
 anndata==0.8.0
+scanpy==1.9.3
 matplotlib==3.8.2
 seaborn>=0.13.0
-torch==2.0.1
+# scvi-tools==0.20.3  # Temporarily disabled for deployment
 
 # HTTP requests (required by scvi-tools)
 requests==2.31.0
