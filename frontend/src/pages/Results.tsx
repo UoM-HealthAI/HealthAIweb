@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import { API_CONFIG, buildApiUrl } from '../config/api';
 
 // Result data type definition matching API response
 interface TaskResult {
@@ -48,7 +49,7 @@ function Results() {
   const fetchResult = async (id: string) => {
     try {
       console.log('Fetching results... Task ID:', id);
-      const response = await fetch(`http://localhost:8000/tasks/${id}`);
+      const response = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.TASKS(id)));
       
       if (!response.ok) {
         throw new Error('Could not fetch results.');
@@ -74,7 +75,7 @@ function Results() {
   // File download function
   const downloadFile = async (filePath: string, fileName: string) => {
     try {
-      const response = await fetch(`http://localhost:8000/${filePath}`);
+      const response = await fetch(buildApiUrl(`/${filePath}`));
       if (!response.ok) {
         throw new Error('Download failed');
       }
@@ -180,7 +181,7 @@ function Results() {
                     <h4 style={{color: '#007bff', marginBottom: '1rem'}}>UMAP Visualization</h4>
                     <div style={{textAlign: 'center', marginBottom: '1rem'}}>
                       <img 
-                        src={`http://localhost:8000/${result.metadata.execution_result.visualizations.umap_plot}`}
+                        src={buildApiUrl(`/${result.metadata.execution_result.visualizations.umap_plot}`)}
                         alt="UMAP Plot"
                         style={{
                           width: '100%', 
@@ -217,7 +218,7 @@ function Results() {
                     <h4 style={{color: '#007bff', marginBottom: '1rem'}}>Training Progress</h4>
                     <div style={{textAlign: 'center', marginBottom: '1rem'}}>
                       <img 
-                        src={`http://localhost:8000/${result.metadata.execution_result.visualizations.loss_curve}`}
+                        src={buildApiUrl(`/${result.metadata.execution_result.visualizations.loss_curve}`)}
                         alt="Loss Curve"
                         style={{
                           width: '100%', 

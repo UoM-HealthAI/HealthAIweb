@@ -27,15 +27,6 @@ services:
       - backend
     restart: unless-stopped
 
-  # MkDocs Documentation
-  docs:
-    build: ./docs
-    ports:
-      - "8001:8000"
-    volumes:
-      - ./docs:/docs
-    restart: unless-stopped
-
   # Demo Service with live reload
   demo:
     build:
