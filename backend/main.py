@@ -56,25 +56,32 @@ app.add_middleware(
 )
 
 def _make_paths_relative(file_paths: dict, base_dir: str = "outputs") -> dict:
-    """Convert absolute file paths to relative paths for API responses"""
+    """Convert absolute file paths to web-accessible URLs for API responses"""
     if not isinstance(file_paths, dict):
         return file_paths
     
-    relative_paths = {}
+    web_paths = {}
     for key, value in file_paths.items():
         if isinstance(value, dict):
-            relative_paths[key] = _make_paths_relative(value, base_dir)
-        elif isinstance(value, str) and os.path.isabs(value):
-            # Convert absolute path to relative path from base_dir
-            try:
-                relative_paths[key] = os.path.relpath(value, base_dir)
-            except ValueError:
-                # If relative path conversion fails, keep original
-                relative_paths[key] = value
+            web_paths[key] = _make_paths_relative(value, base_dir)
+        elif isinstance(value, str):
+            # Convert file paths to web URLs
+            if value.startswith("outputs/"):
+                # Convert relative outputs path to web URL
+                web_paths[key] = f"/{value}"
+            elif os.path.isabs(value) and "outputs" in value:
+                # Convert absolute path to web URL
+                try:
+                    relative_path = os.path.relpath(value, base_dir)
+                    web_paths[key] = f"/outputs/{relative_path}"
+                except ValueError:
+                    web_paths[key] = value
+            else:
+                web_paths[key] = value
         else:
-            relative_paths[key] = value
+            web_paths[key] = value
     
-    return relative_paths
+    return web_paths
 
 
 @app.get("/")
