@@ -1,6 +1,7 @@
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 import uuid
 import os
 import json
@@ -32,6 +33,24 @@ init_directories()
 
 # Mount static files for serving output files
 app.mount("/outputs", StaticFiles(directory="outputs"), name="outputs")
+
+# Mount React frontend (for production deployment)
+frontend_build_path = Path("../frontend/build")
+if frontend_build_path.exists():
+    app.mount("/static", StaticFiles(directory="../frontend/build/static"), name="static")
+    
+    # Serve React app for all other routes (SPA routing)
+    @app.get("/{full_path:path}")
+    async def serve_react_app(full_path: str):
+        """Serve React app for frontend routes"""
+        # API routes should not be caught here
+        if full_path.startswith(("api/", "docs", "redoc", "openapi.json")):
+            raise HTTPException(status_code=404, detail="API endpoint not found")
+        
+        # Serve index.html for all other routes (React Router will handle)
+        return FileResponse("../frontend/build/index.html")
+else:
+    print("Frontend build directory not found. Running in development mode.")
 
 # CORS settings (for frontend connection)
 # Get allowed origins from environment variable for deployment

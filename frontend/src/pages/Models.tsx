@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { API_CONFIG, buildApiUrl } from '../config/api';
 
 // Type definition for model information (TypeScript)
 interface Model {
@@ -34,7 +33,7 @@ function Models() {
 
   const fetchModels = async () => {
     try {
-      const response = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.MODELS));
+      const response = await fetch('/models');
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -53,7 +52,7 @@ function Models() {
   // Function to load model documentation
   const loadModelDocumentation = async (modelId: string) => {
     try {
-      const response = await fetch(buildApiUrl(API_CONFIG.ENDPOINTS.MODEL_DOCUMENTATION(modelId)));
+      const response = await fetch(`/models/${modelId}/documentation`);
       if (response.ok) {
         const data = await response.json();
         setModelDocs(prev => ({
