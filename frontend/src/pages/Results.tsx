@@ -71,23 +71,34 @@ function Results() {
     }
   };
 
+  // Helper: convert API-provided path to absolute URL (and bust cache)
+  const toAbsoluteUrl = (path: string) => {
+    const base = window.location.origin;
+    const normalized = path.startsWith('http')
+      ? path
+      : `${base}${path.startsWith('/') ? path : '/' + path}`;
+    const sep = normalized.includes('?') ? '&' : '?';
+    return `${normalized}${sep}t=${Date.now()}`;
+  };
+
   // File download function
   const downloadFile = async (filePath: string, fileName: string) => {
     try {
-      const response = await fetch(filePath);
+      const url = toAbsoluteUrl(filePath);
+      const response = await fetch(url);
       if (!response.ok) {
         throw new Error('Download failed');
       }
       
       const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
+      const objectUrl = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
-      link.href = url;
+      link.href = objectUrl;
       link.download = fileName;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      window.URL.revokeObjectURL(objectUrl);
     } catch (error) {
       console.error('Download error:', error);
       alert('Download failed. Please try again.');
@@ -180,7 +191,7 @@ function Results() {
                     <h4 style={{color: '#007bff', marginBottom: '1rem'}}>UMAP Visualization</h4>
                     <div style={{textAlign: 'center', marginBottom: '1rem'}}>
                       <img 
-                        src={`${result.metadata.execution_result.visualizations.umap_plot}`}
+                        src={toAbsoluteUrl(result.metadata.execution_result.visualizations.umap_plot!)}
                         alt="UMAP Plot"
                         style={{
                           width: '100%', 
@@ -217,7 +228,7 @@ function Results() {
                     <h4 style={{color: '#007bff', marginBottom: '1rem'}}>Training Progress</h4>
                     <div style={{textAlign: 'center', marginBottom: '1rem'}}>
                       <img 
-                        src={`${result.metadata.execution_result.visualizations.loss_curve}`}
+                        src={toAbsoluteUrl(result.metadata.execution_result.visualizations.loss_curve!)}
                         alt="Loss Curve"
                         style={{
                           width: '100%', 
