@@ -101,6 +101,24 @@ async def api_health_check():
     """API health check"""
     return {"status": "healthy"}
 
+@app.get("/api/debug/outputs")
+async def debug_outputs():
+    """Debug endpoint to check outputs directory"""
+    outputs_dir = Path("outputs")
+    if not outputs_dir.exists():
+        return {"error": "outputs directory does not exist"}
+    
+    files = []
+    for item in outputs_dir.rglob("*"):
+        if item.is_file():
+            files.append(str(item.relative_to(outputs_dir)))
+    
+    return {
+        "outputs_dir_exists": True,
+        "files": files,
+        "total_files": len(files)
+    }
+
 # Week 2: Model-related endpoints
 @app.get("/api/models")
 async def get_models():
@@ -358,8 +376,11 @@ if frontend_build_path.exists():
     @app.get("/{full_path:path}")
     async def serve_react_app(full_path: str):
         """Serve React app for frontend routes - this catches all unmatched routes"""
-        # At this point, all API routes have been checked and didn't match
-        # So this must be a frontend route - serve index.html
+        # Skip API routes only
+        if full_path.startswith(("api", "docs", "redoc", "openapi.json", "health")):
+            raise HTTPException(status_code=404, detail=f"Endpoint not found: {full_path}")
+        
+        # Serve index.html for frontend routes
         return FileResponse("../frontend/build/index.html")
 
 if __name__ == "__main__":
