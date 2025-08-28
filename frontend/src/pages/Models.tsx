@@ -165,13 +165,17 @@ function Models() {
                       {expandedDocs[model.id] ? 'Hide Documentation' : 'Show Documentation'}
                     </button>
                     
-                    <a
-                      href={model.status === 'found' ? `/upload?model=${model.id}` : '#'}
+                    <button
+                      onClick={() => {
+                        if (model.status === 'found') {
+                          window.location.href = `/upload?model=${model.id}`;
+                        }
+                      }}
                       style={{
                         padding: '0.75rem 1.5rem',
                         backgroundColor: model.status === 'found' ? '#007bff' : '#6c757d',
                         color: 'white',
-                        textDecoration: 'none',
+                        border: 'none',
                         borderRadius: '6px',
                         fontSize: '0.95rem',
                         fontWeight: '500',
@@ -181,9 +185,10 @@ function Models() {
                         display: 'inline-block',
                         transition: 'background-color 0.2s ease'
                       }}
+                      disabled={model.status !== 'found'}
                     >
                       {model.status === 'found' ? 'Use Model' : 'Unavailable'}
-                    </a>
+                    </button>
                   </div>
                   
                   {/* Inline Documentation */}
