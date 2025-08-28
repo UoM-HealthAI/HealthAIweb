@@ -100,8 +100,13 @@ async def health_check():
     """Health check for monitoring"""
     return {"status": "healthy"}
 
+@app.get("/api/health")
+async def api_health_check():
+    """API health check"""
+    return {"status": "healthy"}
+
 # Week 2: Model-related endpoints
-@app.get("/models")
+@app.get("/api/models")
 async def get_models():
     """Get list of available AI models"""
     models = scan_models()
@@ -111,7 +116,7 @@ async def get_models():
         "models": models
     }
 
-@app.get("/models/{model_id}/documentation")
+@app.get("/api/models/{model_id}/documentation")
 async def get_model_documentation(model_id: str):
     """Get documentation for a specific model"""
     try:
@@ -136,7 +141,7 @@ async def get_model_documentation(model_id: str):
         raise HTTPException(status_code=500, detail=f"Error retrieving documentation: {str(e)}")
 
 # Week 3: File upload and prediction endpoints
-@app.post("/predict/{model_id}")
+@app.post("/api/predict/{model_id}")
 async def predict_with_model(
     model_id: str,
     file: UploadFile = File(...),
@@ -279,7 +284,7 @@ async def predict_with_model(
     
     return response
 
-@app.get("/tasks/{task_id}")
+@app.get("/api/tasks/{task_id}")
 async def get_task_result(task_id: str):
     """
     Get the result of a specific task
@@ -312,7 +317,7 @@ async def get_task_result(task_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error reading task metadata: {str(e)}")
 
-@app.get("/tasks")
+@app.get("/api/tasks")
 async def list_all_tasks():
     """Get list of all tasks (recent first)"""
     

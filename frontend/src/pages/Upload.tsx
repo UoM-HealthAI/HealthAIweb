@@ -73,7 +73,7 @@ function Upload() {
       formData.append('parameters', JSON.stringify(parameters));
 
       // Send file to backend
-      const response = await fetch(`/predict/${selectedModel}`, {
+      const response = await fetch(`/api/predict/${selectedModel}`, {
         method: 'POST',
         body: formData,
       });
