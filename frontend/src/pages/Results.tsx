@@ -74,7 +74,7 @@ function Results() {
   // File download function
   const downloadFile = async (filePath: string, fileName: string) => {
     try {
-      const response = await fetch(`/api/${filePath}`);
+      const response = await fetch(filePath);
       if (!response.ok) {
         throw new Error('Download failed');
       }
@@ -180,7 +180,7 @@ function Results() {
                     <h4 style={{color: '#007bff', marginBottom: '1rem'}}>UMAP Visualization</h4>
                     <div style={{textAlign: 'center', marginBottom: '1rem'}}>
                       <img 
-                        src={`/api/${result.metadata.execution_result.visualizations.umap_plot}`}
+                        src={`${result.metadata.execution_result.visualizations.umap_plot}`}
                         alt="UMAP Plot"
                         style={{
                           width: '100%', 
@@ -217,7 +217,7 @@ function Results() {
                     <h4 style={{color: '#007bff', marginBottom: '1rem'}}>Training Progress</h4>
                     <div style={{textAlign: 'center', marginBottom: '1rem'}}>
                       <img 
-                        src={`/api/${result.metadata.execution_result.visualizations.loss_curve}`}
+                        src={`${result.metadata.execution_result.visualizations.loss_curve}`}
                         alt="Loss Curve"
                         style={{
                           width: '100%', 
