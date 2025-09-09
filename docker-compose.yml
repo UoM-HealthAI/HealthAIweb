@@ -11,7 +11,11 @@ services:
       - ./model_registry:/app/model_registry
     environment:
       - PYTHONPATH=/app
+      - HOST=0.0.0.0
+      - PORT=8000
     restart: unless-stopped
+    networks:
+      - healthai-network
     
   # React Frontend
   frontend:
@@ -22,10 +26,14 @@ services:
       - ./frontend:/app
       - /app/node_modules
     environment:
-      - REACT_APP_API_URL=http://localhost:8000
+      - REACT_APP_API_URL=http://0.0.0.0:8000
+      - HOST=0.0.0.0
+      - PORT=3000
     depends_on:
       - backend
     restart: unless-stopped
+    networks:
+      - healthai-network
 
   # Demo Service with live reload
   demo:
@@ -37,7 +45,21 @@ services:
     volumes:
       - ./demo.py:/app/demo.py  # Mount demo.py for live updates
       - ./macaque.h5ad:/app/macaque.h5ad
+    environment:
+      - HOST=0.0.0.0
+      - PORT=7862
     restart: unless-stopped
+    networks:
+      - healthai-network
+
+# Custom network for lab access
+networks:
+  healthai-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
 
 # Week 1: Basic multi-service setup with Docker
 # Usage: docker-compose up --build 
+# Lab students can access via your computer's IP address 
