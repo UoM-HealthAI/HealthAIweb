@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import { ModelResultsDisplay } from '../components/ModelResultsDisplay';
+import { getModelConfig } from '../config/modelConfig';
 
 // Result data type definition matching API response
 interface TaskResult {
@@ -15,14 +17,8 @@ interface TaskResult {
     validation: any;
     execution_result: {
       status: string;
-      visualizations?: {
-        umap_plot?: string;
-        loss_curve?: string;
-      };
-      data_files?: {
-        latent_representation?: string;
-        processed_data?: string;
-      };
+      visualizations?: Record<string, string>;
+      data_files?: Record<string, string>;
       metadata?: any;
     };
   };
@@ -48,19 +44,20 @@ function Results() {
   const fetchResult = async (id: string) => {
     try {
       console.log('Fetching results... Task ID:', id);
+      
       const response = await fetch(`/api/tasks/${id}`);
       
       if (!response.ok) {
-        throw new Error('Could not fetch results.');
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
       
       const data = await response.json();
-      console.log('Received results:', data);
+      console.log('Results data:', data);
       
-      if (data.found && data.metadata) {
+      if (data.found) {
         setResult(data);
       } else {
-        throw new Error('Results not found.');
+        setError('Task not found');
       }
       
       setLoading(false);
@@ -71,75 +68,83 @@ function Results() {
     }
   };
 
-  // Helper: convert API-provided path to absolute URL (and bust cache)
-  const toAbsoluteUrl = (path: string) => {
-    const base = window.location.origin;
-    const normalized = path.startsWith('http')
-      ? path
-      : `${base}${path.startsWith('/') ? path : '/' + path}`;
-    const sep = normalized.includes('?') ? '&' : '?';
-    return `${normalized}${sep}t=${Date.now()}`;
-  };
-
-  // File download function
-  const downloadFile = async (filePath: string, fileName: string) => {
+  // Function to download files
+  const downloadFile = async (filePath: string, filename: string) => {
     try {
-      const url = toAbsoluteUrl(filePath);
+      console.log('Downloading file:', filePath, 'as:', filename);
+      
+      // Create absolute URL if needed
+      const url = filePath.startsWith('http') ? filePath : `${window.location.origin}${filePath.startsWith('/') ? '' : '/'}${filePath}`;
+      
+      // Fetch the file content
       const response = await fetch(url);
       if (!response.ok) {
-        throw new Error('Download failed');
+        throw new Error(`Failed to download file: ${response.status} ${response.statusText}`);
       }
       
+      // Get the blob
       const blob = await response.blob();
-      const objectUrl = window.URL.createObjectURL(blob);
+      
+      // Create download link
       const link = document.createElement('a');
-      link.href = objectUrl;
-      link.download = fileName;
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      
+      // Trigger download
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      window.URL.revokeObjectURL(objectUrl);
-    } catch (error) {
-      console.error('Download error:', error);
-      alert('Download failed. Please try again.');
+      
+      // Clean up
+      URL.revokeObjectURL(link.href);
+      
+    } catch (err) {
+      console.error('Download error:', err);
+      alert(`Download failed: ${err instanceof Error ? err.message : 'Unknown error'}. Please try again.`);
     }
   };
 
-  // Loading
+  // Show loading state
   if (loading) {
     return (
-      <div>
-        <h1 className="page-title">Analysis Results</h1>
-        <div className="card">
-          <p>Loading results...</p>
-        </div>
+      <div style={{textAlign: 'center', padding: '3rem'}}>
+        <h2>Loading Results...</h2>
+        <p style={{color: '#666'}}>Please wait while we fetch your analysis results</p>
+        <div style={{
+          width: '50px',
+          height: '50px',
+          border: '4px solid #f3f3f3',
+          borderTop: '4px solid #007bff',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite',
+          margin: '2rem auto'
+        }}></div>
       </div>
     );
   }
 
-  // Error occurred
+  // Show error state
   if (error) {
     return (
-      <div>
-        <h1 className="page-title">Analysis Results</h1>
-        <div className="card">
-          <p style={{color: 'red'}}>Error: {error}</p>
-          <button className="btn btn-primary" onClick={() => taskId && fetchResult(taskId)}>
-            Retry
-          </button>
-        </div>
+      <div style={{textAlign: 'center', padding: '3rem'}}>
+        <h2 style={{color: '#dc3545'}}>Error Loading Results</h2>
+        <p style={{color: '#666', marginBottom: '2rem'}}>{error}</p>
+        <button 
+          onClick={() => window.location.reload()} 
+          className="btn btn-primary"
+        >
+          Try Again
+        </button>
       </div>
     );
   }
 
-  // No results
+  // Show results if available
   if (!result) {
     return (
-      <div>
-        <h1 className="page-title">Analysis Results</h1>
-        <div className="card">
-          <p>No results found.</p>
-        </div>
+      <div style={{textAlign: 'center', padding: '3rem'}}>
+        <h2>No Results Found</h2>
+        <p style={{color: '#666'}}>The requested analysis results could not be found.</p>
       </div>
     );
   }
@@ -152,185 +157,78 @@ function Results() {
           View your processed data, visualizations, and download files
         </p>
       </div>
-      
-      {/* Basic information */}
-      <div className="card">
+
+      {/* Task Information Card */}
+      <div className="card" style={{marginBottom: '2rem'}}>
         <h3 style={{color: '#495057', marginBottom: '1rem'}}>Task Information</h3>
-        <p><strong>Task ID:</strong> {result.task_id}</p>
-        <p><strong>Model:</strong> {result.metadata.model_id}</p>
-        <p><strong>Input File:</strong> {result.metadata.filename}</p>
-        <p><strong>Status:</strong> 
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'auto 1fr',
+          gap: '0.5rem 2rem',
+          alignItems: 'center'
+        }}>
+          <strong>Task ID:</strong>
+          <span style={{fontFamily: 'monospace', fontSize: '0.9rem'}}>{result.metadata.task_id}</span>
+          
+          <strong>Model:</strong>
+          <span>{result.metadata.model_id.replace('_', ' ')}</span>
+          
+          <strong>Input File:</strong>
+          <span>{result.metadata.filename}</span>
+          
+          <strong>Status:</strong>
           <span style={{
-            color: result.metadata.status === 'completed' ? 'green' : 
-                   result.metadata.status === 'failed' ? 'red' : 'orange',
-            fontWeight: 'bold',
-            marginLeft: '0.5rem'
+            color: result.metadata.status === 'completed' ? '#28a745' : 
+                   result.metadata.status === 'failed' ? '#dc3545' : '#ffc107',
+            fontWeight: 'bold'
           }}>
             {result.metadata.status}
           </span>
-        </p>
-        <p><strong>Parameters:</strong> {JSON.stringify(result.metadata.parameters)}</p>
+          
+          <strong>Parameters:</strong>
+          <span style={{fontFamily: 'monospace', fontSize: '0.9rem'}}>
+            {JSON.stringify(result.metadata.parameters)}
+          </span>
+        </div>
       </div>
 
       {/* Display results if successful */}
-      
       {result?.metadata?.status === 'completed' && result?.metadata?.execution_result && (
         <>
-          {/* Visualization results */}
-          {result.metadata.execution_result.visualizations && (
-            <div className="card">
-              <h3 style={{color: '#495057', marginBottom: '1rem'}}>Data Visualizations</h3>
-              <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem'}}>
-                {result.metadata.execution_result.visualizations.umap_plot && (
-                  <div style={{
-                    border: '1px solid #e9ecef',
-                    borderRadius: '8px',
-                    padding: '1rem',
-                    background: '#f8f9fa'
-                  }}>
-                    <h4 style={{color: '#007bff', marginBottom: '1rem'}}>UMAP Visualization</h4>
-                    <div style={{textAlign: 'center', marginBottom: '1rem'}}>
-                      <img 
-                        src={toAbsoluteUrl(result.metadata.execution_result.visualizations.umap_plot!)}
-                        alt="UMAP Plot"
-                        style={{
-                          width: '100%', 
-                          maxWidth: '400px', 
-                          border: '1px solid #ddd',
-                          borderRadius: '4px',
-                          background: 'white'
-                        }}
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                          e.currentTarget.nextElementSibling!.textContent = 'Image not available';
-                        }}
-                      />
-                      <p style={{fontSize: '0.9rem', color: '#666', marginTop: '0.5rem'}}>
-                        2D representation of your single-cell data
-                      </p>
-                    </div>
-                    <button 
-                      className="btn btn-secondary"
-                      onClick={() => downloadFile(result.metadata.execution_result.visualizations!.umap_plot!, 'umap_plot.png')}
-                      style={{width: '100%'}}
-                    >
-                      Download UMAP Plot
-                    </button>
-                  </div>
-                )}
-                {result.metadata.execution_result.visualizations.loss_curve && (
-                  <div style={{
-                    border: '1px solid #e9ecef',
-                    borderRadius: '8px',
-                    padding: '1rem',
-                    background: '#f8f9fa'
-                  }}>
-                    <h4 style={{color: '#007bff', marginBottom: '1rem'}}>Training Progress</h4>
-                    <div style={{textAlign: 'center', marginBottom: '1rem'}}>
-                      <img 
-                        src={toAbsoluteUrl(result.metadata.execution_result.visualizations.loss_curve!)}
-                        alt="Loss Curve"
-                        style={{
-                          width: '100%', 
-                          maxWidth: '400px', 
-                          border: '1px solid #ddd',
-                          borderRadius: '4px',
-                          background: 'white'
-                        }}
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                          e.currentTarget.nextElementSibling!.textContent = 'Image not available';
-                        }}
-                      />
-                      <p style={{fontSize: '0.9rem', color: '#666', marginTop: '0.5rem'}}>
-                        Model training convergence over epochs
-                      </p>
-                    </div>
-                    <button 
-                      className="btn btn-secondary"
-                      onClick={() => downloadFile(result.metadata.execution_result.visualizations!.loss_curve!, 'loss_curve.png')}
-                      style={{width: '100%'}}
-                    >
-                      Download Loss Curve
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Downloadable files */}
-          {result.metadata.execution_result.data_files && (
-            <div className="card">
-              <h3 style={{color: '#495057', marginBottom: '1rem'}}>Download Processed Data</h3>
-              <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem'}}>
-                {result.metadata.execution_result.data_files.latent_representation && (
-                  <div style={{
-                    border: '1px solid #e9ecef',
-                    borderRadius: '8px',
-                    padding: '1rem',
-                    background: '#f8f9fa'
-                  }}>
-                    <h4 style={{color: '#28a745', marginBottom: '0.5rem'}}>Latent Representation</h4>
-                    <p style={{fontSize: '0.9rem', color: '#666', marginBottom: '1rem'}}>
-                      CSV file containing the low-dimensional embeddings of your cells
-                    </p>
-                    <div style={{background: '#e8f5e8', padding: '0.5rem', borderRadius: '4px', marginBottom: '1rem'}}>
-                      <small style={{color: '#155724'}}>
-                        <strong>Usage:</strong> Import into Python/R for further analysis or visualization
-                      </small>
-                    </div>
-                    <button 
-                      className="btn btn-success"
-                      onClick={() => downloadFile(
-                        result.metadata.execution_result.data_files!.latent_representation!, 
-                        'latent_representation.csv'
-                      )}
-                      style={{width: '100%'}}
-                    >
-                      Download CSV File
-                    </button>
-                  </div>
-                )}
-                {result.metadata.execution_result.data_files.processed_data && (
-                  <div style={{
-                    border: '1px solid #e9ecef',
-                    borderRadius: '8px',
-                    padding: '1rem',
-                    background: '#f8f9fa'
-                  }}>
-                    <h4 style={{color: '#28a745', marginBottom: '0.5rem'}}>Processed Dataset</h4>
-                    <p style={{fontSize: '0.9rem', color: '#666', marginBottom: '1rem'}}>
-                      Complete H5AD file with batch-corrected data and metadata
-                    </p>
-                    <div style={{background: '#e8f5e8', padding: '0.5rem', borderRadius: '4px', marginBottom: '1rem'}}>
-                      <small style={{color: '#155724'}}>
-                        <strong>Usage:</strong> Load directly into scanpy, scvi-tools, or other analysis tools
-                      </small>
-                    </div>
-                    <button 
-                      className="btn btn-success"
-                      onClick={() => downloadFile(
-                        result.metadata.execution_result.data_files!.processed_data!, 
-                        'processed_data.h5ad'
-                      )}
-                      style={{width: '100%'}}
-                    >
-                      Download H5AD File
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+          {/* Dynamic Results Display */}
+          {(() => {
+            const modelConfig = getModelConfig(result.metadata.model_id);
+            if (!modelConfig) {
+              return (
+                <div className="card">
+                  <h3 style={{color: '#dc3545'}}>Configuration Error</h3>
+                  <p>Model configuration not found for: {result.metadata.model_id}</p>
+                </div>
+              );
+            }
+            
+            return (
+              <ModelResultsDisplay
+                modelConfig={modelConfig}
+                visualizations={result.metadata.execution_result.visualizations || {}}
+                dataFiles={result.metadata.execution_result.data_files || {}}
+                onDownload={downloadFile}
+              />
+            );
+          })()}
         </>
       )}
 
       {/* Display error information if failed */}
       {result.metadata.status === 'failed' && (
-        <div className="card" style={{backgroundColor: '#fff5f5', borderColor: '#fed7d7'}}>
-          <h3>Error Details</h3>
-          <p style={{color: 'red'}}>Analysis failed. Please try again.</p>
+        <div className="card" style={{
+          backgroundColor: '#f8d7da', 
+          border: '1px solid #f5c6cb'
+        }}>
+          <h3 style={{color: '#721c24', marginBottom: '1rem'}}>Error Details</h3>
+          <p style={{color: '#721c24', margin: 0}}>
+            Analysis failed. Please try again.
+          </p>
         </div>
       )}
     </div>

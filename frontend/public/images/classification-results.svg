@@ -1,0 +1,69 @@
+<svg width="600" height="400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .title { font: bold 16px sans-serif; fill: #2c3e50; }
+      .label { font: 12px sans-serif; fill: #34495e; }
+      .confidence { font: 11px sans-serif; fill: #7f8c8d; }
+      .bar { fill: #3498db; }
+      .input-image { fill: #ecf0f1; stroke: #34495e; stroke-width: 2; }
+    </style>
+  </defs>
+  
+  <!-- Title -->
+  <text x="300" y="30" text-anchor="middle" class="title">Image Classification Results</text>
+  
+  <!-- Input Image Placeholder -->
+  <rect x="50" y="60" width="120" height="120" class="input-image"/>
+  <text x="110" y="125" text-anchor="middle" class="label">Input Image</text>
+   <text x="110" y="140" text-anchor="middle" font-size="10" fill="#7f8c8d">(224×224 pixels)</text>
+  
+  <!-- Arrow -->
+  <path d="M 180 120 L 220 120" stroke="#2c3e50" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+  <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+    <polygon points="0 0, 10 3.5, 0 7" fill="#2c3e50" />
+  </marker>
+  
+  <!-- Results Section -->
+  <text x="250" y="80" class="title">Top-5 Predictions</text>
+  
+  <!-- Prediction 1 -->
+  <rect x="250" y="100" width="280" height="25" class="bar" opacity="0.9"/>
+  <text x="260" y="118" class="label" fill="white">1. Golden Retriever</text>
+  <text x="520" y="118" class="confidence" fill="white">94.2%</text>
+  
+  <!-- Prediction 2 -->
+  <rect x="250" y="135" width="210" height="25" class="bar" opacity="0.7"/>
+  <text x="260" y="153" class="label" fill="white">2. Labrador Retriever</text>
+  <text x="450" y="153" class="confidence" fill="white">3.8%</text>
+  
+  <!-- Prediction 3 -->
+  <rect x="250" y="170" width="140" height="25" class="bar" opacity="0.5"/>
+  <text x="260" y="188" class="label" fill="white">3. Cocker Spaniel</text>
+  <text x="380" y="188" class="confidence" fill="white">1.2%</text>
+  
+  <!-- Prediction 4 -->
+  <rect x="250" y="205" width="70" height="25" class="bar" opacity="0.3"/>
+  <text x="260" y="223" class="label" fill="white">4. Beagle</text>
+  <text x="310" y="223" class="confidence" fill="white">0.5%</text>
+  
+  <!-- Prediction 5 -->
+  <rect x="250" y="240" width="42" height="25" class="bar" opacity="0.2"/>
+  <text x="260" y="258" class="label" fill="white">5. Setter</text>
+  <text x="285" y="258" class="confidence" fill="white">0.3%</text>
+  
+  <!-- Confidence Scale -->
+  <text x="250" y="290" class="label">Confidence Scale:</text>
+  <rect x="250" y="300" width="100" height="10" fill="#3498db"/>
+  <text x="250" y="325" font-size="10" fill="#7f8c8d">0%</text>
+  <text x="300" y="325" font-size="10" fill="#7f8c8d">50%</text>
+  <text x="345" y="325" font-size="10" fill="#7f8c8d">100%</text>
+  
+  <!-- Model Info -->
+  <text x="50" y="220" class="label">Model: ResNet-18</text>
+  <text x="50" y="240" class="confidence">Dataset: ImageNet (1000 classes)</text>
+  <text x="50" y="260" class="confidence">Processing Time: ~50ms</text>
+  
+  <!-- Threshold Line -->
+  <line x1="275" y1="95" x2="275" y2="270" stroke="#e74c3c" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="280" y="92" font-size="10" fill="#e74c3c">Confidence Threshold (50%)</text>
+</svg>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getAllModelConfigs } from '../config/modelConfig';
 
 // Type definition for model information (TypeScript)
 interface Model {
@@ -32,7 +33,7 @@ function Models() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedModels, setExpandedModels] = useState<{[key: string]: boolean}>({});
-  const [expandedDocs, setExpandedDocs] = useState<{[key: string]: boolean}>({});
+  const [selectedModel, setSelectedModel] = useState<string | null>(null);
   const [modelDocs, setModelDocs] = useState<{[key: string]: ModelDocumentation}>({});
   const [copiedState, setCopiedState] = useState<{[key: string]: boolean}>({});
 
@@ -53,6 +54,142 @@ function Models() {
     } catch (e) {
       console.error('Clipboard copy failed', e);
     }
+  };
+
+  const downloadDocumentation = (format: 'md' | 'pdf') => {
+    if (!selectedModel || !modelDocs[selectedModel]) return;
+    
+    const modelName = models.find(m => m.id === selectedModel)?.name || selectedModel;
+    const doc = modelDocs[selectedModel];
+    
+    if (format === 'md') {
+      const markdownContent = generateMarkdown(modelName, doc);
+      const blob = new Blob([markdownContent], { type: 'text/markdown' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${selectedModel}-documentation.md`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } else if (format === 'pdf') {
+      // For PDF, we'll create an HTML version and let the browser handle PDF generation
+      const htmlContent = generateHTML(modelName, doc);
+      const blob = new Blob([htmlContent], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const newWindow = window.open(url, '_blank');
+      if (newWindow) {
+        newWindow.onload = () => {
+          setTimeout(() => {
+            newWindow.print();
+          }, 500);
+        };
+      }
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+  };
+
+  const generateMarkdown = (modelName: string, doc: ModelDocumentation): string => {
+    return `# ${modelName} Documentation
+
+## Overview
+
+### Description
+${doc.simple_explanation}
+
+### When to Use
+${doc.when_to_use.map(item => `- ${item}`).join('\n')}
+
+### Key Features
+${doc.features.map(feature => `- ${feature}`).join('\n')}
+
+### Technical Details
+${doc.technical_details.map(detail => `- ${detail}`).join('\n')}
+
+## Preprocessing
+
+\`\`\`python
+${doc.preprocessing_code || 'Standard preprocessing pipeline for data preparation.'}
+\`\`\`
+
+## Mathematical Formulation
+
+${doc.mathematical_formulation || 'Mathematical formulation details.'}
+
+## Code Example
+
+\`\`\`python
+${doc.code_example || 'Complete workflow example.'}
+\`\`\`
+
+## Visualization
+
+\`\`\`python
+${doc.visualization_code || 'Visualization pipeline for results analysis.'}
+\`\`\`
+
+## References
+
+${doc.citation}
+
+---
+Generated from HealthAI Web Platform
+`;
+  };
+
+  const generateHTML = (modelName: string, doc: ModelDocumentation): string => {
+    return `<!DOCTYPE html>
+<html>
+<head>
+    <title>${modelName} Documentation</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; margin: 40px; color: #333; }
+        h1 { color: #2c3e50; border-bottom: 3px solid #2c3e50; padding-bottom: 10px; }
+        h2 { color: #2c3e50; border-bottom: 2px solid #2c3e50; padding-bottom: 8px; margin-top: 30px; }
+        h3 { color: #34495e; margin-top: 25px; }
+        pre { background: #f8f9fa; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        code { background: #f8f9fa; padding: 2px 4px; border-radius: 3px; }
+        ul { padding-left: 20px; }
+        li { margin-bottom: 5px; }
+        .citation { background: #f8f9fa; padding: 15px; border-left: 4px solid #2c3e50; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <h1>${modelName} Documentation</h1>
+    
+    <h2>Overview</h2>
+    <h3>Description</h3>
+    <p>${doc.simple_explanation}</p>
+    
+    <h3>When to Use</h3>
+    <ul>${doc.when_to_use.map(item => `<li>${item}</li>`).join('')}</ul>
+    
+    <h3>Key Features</h3>
+    <ul>${doc.features.map(feature => `<li>${feature}</li>`).join('')}</ul>
+    
+    <h3>Technical Details</h3>
+    <ul>${doc.technical_details.map(detail => `<li>${detail}</li>`).join('')}</ul>
+    
+    <h2>Preprocessing</h2>
+    <pre><code>${doc.preprocessing_code || 'Standard preprocessing pipeline for data preparation.'}</code></pre>
+    
+    <h2>Mathematical Formulation</h2>
+    <pre>${doc.mathematical_formulation || 'Mathematical formulation details.'}</pre>
+    
+    <h2>Code Example</h2>
+    <pre><code>${doc.code_example || 'Complete workflow example.'}</code></pre>
+    
+    <h2>Visualization</h2>
+    <pre><code>${doc.visualization_code || 'Visualization pipeline for results analysis.'}</code></pre>
+    
+    <h2>References</h2>
+    <div class="citation">${doc.citation}</div>
+    
+    <hr>
+    <p><em>Generated from HealthAI Web Platform</em></p>
+</body>
+</html>`;
   };
 
   // Function to fetch model list from backend
@@ -376,7 +513,7 @@ plt.show()`,
        }}>
         {/* Logo */}
         <div style={{ marginBottom: '30px' }}>
-          <span style={{ color: '#ff6b35', fontSize: '24px', fontWeight: 'bold' }}>🧬</span>
+          <span style={{ color: '#2c3e50', fontSize: '24px', fontWeight: 'bold' }}>🧬</span>
           <span style={{ marginLeft: '10px', fontSize: '18px', fontWeight: 'bold' }}>HealthAI</span>
         </div>
         
@@ -389,10 +526,10 @@ plt.show()`,
             }))}
             style={{
               padding: '10px 15px',
-              backgroundColor: '#e3f2fd',
-              color: '#1976d2',
+              backgroundColor: '#f8f9fa',
+              color: '#2c3e50',
               borderRadius: '5px',
-              borderLeft: '3px solid #1976d2',
+              borderLeft: '3px solid #2c3e50',
               marginBottom: '20px',
               cursor: 'pointer',
               display: 'flex',
@@ -401,10 +538,10 @@ plt.show()`,
               transition: 'all 0.2s ease'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#d1ecf1';
+              e.currentTarget.style.backgroundColor = '#e9ecef';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = '#e3f2fd';
+              e.currentTarget.style.backgroundColor = '#f8f9fa';
             }}
           >
             <span style={{ fontWeight: '600' }}>Models</span>
@@ -418,29 +555,26 @@ plt.show()`,
             <div key={model.id} style={{ marginBottom: '10px', marginLeft: '15px' }}>
               <div
                 onClick={() => {
-                  setExpandedDocs(prev => ({
-                    ...prev,
-                    [model.id]: true
-                  }));
+                  setSelectedModel(model.id);
                   loadModelDocumentation(model.id);
                 }}
                 style={{
                   padding: '8px 15px',
                   cursor: 'pointer',
                   borderRadius: '5px',
-                  backgroundColor: expandedDocs[model.id] ? '#e8f4f8' : 'transparent',
-                  border: expandedDocs[model.id] ? '1px solid #b3d9ff' : '1px solid transparent',
+                  backgroundColor: selectedModel === model.id ? '#e9ecef' : 'transparent',
+                  border: selectedModel === model.id ? '1px solid #ced4da' : '1px solid transparent',
                   transition: 'all 0.2s ease',
                   fontSize: '14px',
                   fontWeight: '500'
                 }}
                 onMouseEnter={(e) => {
-                  if (!expandedDocs[model.id]) {
+                  if (selectedModel !== model.id) {
                     e.currentTarget.style.backgroundColor = '#f0f0f0';
                   }
                 }}
                 onMouseLeave={(e) => {
-                  if (!expandedDocs[model.id]) {
+                  if (selectedModel !== model.id) {
                     e.currentTarget.style.backgroundColor = 'transparent';
                   }
                 }}
@@ -460,13 +594,12 @@ plt.show()`,
             Available Models
           </h1>
           <p style={{ color: '#6c757d', marginBottom: '40px' }}>
-            Choose from our collection of pre-trained AI models for single-cell data analysis
+            Choose from our collection of pre-trained AI models for various data analysis tasks
           </p>
 
           {/* Model Documentation Display */}
-          {models.map((model) => (
-            expandedDocs[model.id] && modelDocs[model.id] && (
-               <div key={`${model.id}-docs`} style={{
+          {selectedModel && modelDocs[selectedModel] && (
+            <div style={{
                  backgroundColor: '#ffffff',
                  border: '1px solid #e0e0e0',
                  borderRadius: '8px',
@@ -476,12 +609,14 @@ plt.show()`,
                }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '30px' }}>
                   <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#2c3e50', margin: 0 }}>
-                    {model.name}
+                    {models.find(m => m.id === selectedModel)?.name}
                   </h2>
-                  <button
-                    onClick={() => window.location.href = `/upload?model=${model.id}`}
-                    style={{
-                      backgroundColor: '#007bff',
+                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                    {/* Use Model Button */}
+                    <button
+                      onClick={() => window.location.href = `/upload?model=${selectedModel}`}
+                      style={{
+                        backgroundColor: '#2c3e50',
                       color: 'white',
                       border: 'none',
                       padding: '12px 24px',
@@ -492,43 +627,221 @@ plt.show()`,
                       transition: 'background-color 0.2s ease'
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = '#0056b3';
+                        e.currentTarget.style.backgroundColor = '#34495e';
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = '#007bff';
+                        e.currentTarget.style.backgroundColor = '#2c3e50';
                     }}
                   >
                     Use Model
                   </button>
+                    
+                    {/* Download Buttons */}
+                    <div 
+                      style={{ position: 'relative', display: 'inline-block' }}
+                      onMouseEnter={(e) => {
+                        const dropdown = e.currentTarget.querySelector('.download-dropdown') as HTMLElement;
+                        if (dropdown) dropdown.style.display = 'block';
+                      }}
+                      onMouseLeave={(e) => {
+                        const dropdown = e.currentTarget.querySelector('.download-dropdown') as HTMLElement;
+                        if (dropdown) dropdown.style.display = 'none';
+                      }}
+                    >
+                  <button
+                    style={{
+                          backgroundColor: '#6c757d',
+                          color: 'white',
+                          border: 'none',
+                          padding: '12px 24px',
+                          borderRadius: '6px',
+                          fontSize: '16px',
+                          fontWeight: '600',
+                          cursor: 'pointer',
+                          transition: 'background-color 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = '#5a6268';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = '#6c757d';
+                        }}
+                      >
+                        Download ▼
+                      </button>
+                      <div 
+                        className="download-dropdown"
+                        style={{
+                          position: 'absolute',
+                          top: '100%',
+                          right: 0,
+                          backgroundColor: 'white',
+                          border: '1px solid #dee2e6',
+                          borderRadius: '6px',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                          minWidth: '140px',
+                          zIndex: 1000,
+                          display: 'none',
+                          marginTop: '2px'
+                        }}
+                      >
+                        <button
+                          onClick={() => downloadDocumentation('md')}
+                          style={{
+                            width: '100%',
+                            padding: '10px 12px',
+                            border: 'none',
+                            background: 'transparent',
+                            textAlign: 'left',
+                            cursor: 'pointer',
+                            fontSize: '14px',
+                            color: '#2c3e50',
+                            borderRadius: '6px 6px 0 0'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#f8f9fa';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = 'transparent';
+                          }}
+                        >
+                          Markdown (.md)
+                        </button>
+                        <hr style={{ margin: 0, border: 'none', borderTop: '1px solid #e9ecef' }} />
+                        <button
+                          onClick={() => downloadDocumentation('pdf')}
+                          style={{
+                            width: '100%',
+                            padding: '10px 12px',
+                            border: 'none',
+                            background: 'transparent',
+                            textAlign: 'left',
+                            cursor: 'pointer',
+                            fontSize: '14px',
+                            color: '#2c3e50',
+                            borderRadius: '0 0 6px 6px'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#f8f9fa';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = 'transparent';
+                          }}
+                        >
+                          PDF (Print)
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                  {/* All Content in One Page */}
                  <div>
                    {/* Overview Section */}
                    <div id="overview" style={{ marginBottom: '40px' }}>
-                     <h3 style={{ color: '#2c3e50', fontSize: '22px', marginBottom: '20px', borderBottom: '2px solid #007bff', paddingBottom: '8px' }}>Overview</h3>
+                     <h3 style={{ color: '#2c3e50', fontSize: '22px', marginBottom: '20px', borderBottom: '2px solid #2c3e50', paddingBottom: '8px' }}>Overview</h3>
                      
                      <div style={{ marginBottom: '25px' }}>
                        <h4 style={{ color: '#2c3e50', fontSize: '18px', marginBottom: '10px' }}>Description</h4>
                        <p style={{ lineHeight: '1.8', color: '#555', fontSize: '16px', maxWidth: '100%' }}>
-                         {modelDocs[model.id].simple_explanation}
+                         {modelDocs[selectedModel].simple_explanation}
                        </p>
                      </div>
 
                      {/* Model Architecture Figure */}
-                     {modelDocs[model.id].figures && modelDocs[model.id].figures!.length > 0 && (
+                     {modelDocs[selectedModel].figures && modelDocs[selectedModel].figures!.length > 0 && (
                        <div style={{ marginBottom: '25px', textAlign: 'center' }}>
-                         <img 
-                           src={modelDocs[model.id].figures![0].url}
-                           alt={modelDocs[model.id].figures![0].alt}
-                           style={{ 
-                             maxWidth: '100%', 
-                             height: 'auto', 
-                             border: '1px solid #e0e0e0',
+                         <div style={{
+                           padding: '2rem',
+                           background: '#f8f9fa',
+                           border: '1px solid #e9ecef',
                              borderRadius: '8px',
-                             boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-                           }}
-                         />
+                           marginBottom: '10px'
+                         }}>
+                           <h4 style={{ color: '#2c3e50', marginBottom: '1rem' }}>Architecture Diagram</h4>
+                           <div style={{ 
+                             background: 'white',
+                             padding: '20px',
+                             borderRadius: '6px',
+                             border: '1px solid #dee2e6',
+                             display: 'flex',
+                             justifyContent: 'center',
+                             alignItems: 'center'
+                           }}>
+                             <svg width="600" height="400" xmlns="http://www.w3.org/2000/svg" style={{ maxWidth: '100%', height: 'auto' }}>
+                               <defs>
+                                 <style>
+                                   {`.title { font: bold 16px sans-serif; fill: #2c3e50; }
+                                   .layer { font: 12px sans-serif; fill: #34495e; }
+                                   .arrow { stroke: #2c3e50; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+                                   .block { fill: #ecf0f1; stroke: #34495e; stroke-width: 2; }
+                                   .skip { stroke: #e74c3c; stroke-width: 2; fill: none; stroke-dasharray: 5,5; }`}
+                                 </style>
+                                 <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                   <polygon points="0 0, 10 3.5, 0 7" fill="#2c3e50" />
+                                 </marker>
+                               </defs>
+                               
+                               <text x="300" y="30" textAnchor="middle" className="title">ResNet-18 Architecture</text>
+                               
+                               <rect x="50" y="60" width="80" height="40" className="block"/>
+                               <text x="90" y="85" textAnchor="middle" className="layer">Input</text>
+                               <text x="90" y="110" textAnchor="middle" fontSize="10" fill="#7f8c8d">224×224×3</text>
+                               
+                               <rect x="180" y="60" width="80" height="40" className="block"/>
+                               <text x="220" y="85" textAnchor="middle" className="layer">Conv1</text>
+                               <text x="220" y="110" textAnchor="middle" fontSize="10" fill="#7f8c8d">112×112×64</text>
+                               
+                               <rect x="310" y="40" width="80" height="80" className="block"/>
+                               <text x="350" y="65" textAnchor="middle" className="layer">ResBlock 1</text>
+                               <rect x="320" y="75" width="60" height="15" fill="#3498db" opacity="0.7"/>
+                               <text x="350" y="85" textAnchor="middle" fontSize="10" fill="white">Conv 3×3</text>
+                               <rect x="320" y="95" width="60" height="15" fill="#3498db" opacity="0.7"/>
+                               <text x="350" y="105" textAnchor="middle" fontSize="10" fill="white">Conv 3×3</text>
+                               
+                               <rect x="440" y="40" width="80" height="80" className="block"/>
+                               <text x="480" y="65" textAnchor="middle" className="layer">ResBlock 2</text>
+                               <rect x="450" y="75" width="60" height="15" fill="#3498db" opacity="0.7"/>
+                               <text x="480" y="85" textAnchor="middle" fontSize="10" fill="white">Conv 3×3</text>
+                               <rect x="450" y="95" width="60" height="15" fill="#3498db" opacity="0.7"/>
+                               <text x="480" y="105" textAnchor="middle" fontSize="10" fill="white">Conv 3×3</text>
+                               
+                               <rect x="180" y="180" width="80" height="40" className="block"/>
+                               <text x="220" y="205" textAnchor="middle" className="layer">Global Pool</text>
+                               <text x="220" y="230" textAnchor="middle" fontSize="10" fill="#7f8c8d">1×1×512</text>
+                               
+                               <rect x="310" y="180" width="80" height="40" className="block"/>
+                               <text x="350" y="205" textAnchor="middle" className="layer">FC</text>
+                               <text x="350" y="230" textAnchor="middle" fontSize="10" fill="#7f8c8d">1000 classes</text>
+                               
+                               <rect x="440" y="180" width="80" height="40" className="block"/>
+                               <text x="480" y="205" textAnchor="middle" className="layer">Output</text>
+                               <text x="480" y="230" textAnchor="middle" fontSize="10" fill="#7f8c8d">Probabilities</text>
+                               
+                               <line x1="130" y1="80" x2="175" y2="80" className="arrow"/>
+                               <line x1="260" y1="80" x2="305" y2="80" className="arrow"/>
+                               <line x1="390" y1="80" x2="435" y2="80" className="arrow"/>
+                               <line x1="480" y1="120" x2="480" y2="140" className="arrow"/>
+                               <line x1="480" y1="140" x2="220" y2="140" className="arrow"/>
+                               <line x1="220" y1="140" x2="220" y2="175" className="arrow"/>
+                               <line x1="260" y1="200" x2="305" y2="200" className="arrow"/>
+                               <line x1="390" y1="200" x2="435" y2="200" className="arrow"/>
+                               
+                               <path d="M 310 80 Q 280 50 280 80 Q 280 110 390 80" className="skip"/>
+                               <path d="M 440 80 Q 410 50 410 80 Q 410 110 520 80" className="skip"/>
+                               
+                               <text x="300" y="45" fontSize="10" fill="#e74c3c">Skip Connection</text>
+                               <text x="430" y="45" fontSize="10" fill="#e74c3c">Skip Connection</text>
+                               
+                               <text x="50" y="300" className="title">Key Components:</text>
+                               <rect x="50" y="320" width="15" height="15" className="block"/>
+                               <text x="75" y="332" fontSize="12" fill="#34495e">Convolutional Layer</text>
+                               <line x1="50" y1="350" x2="80" y2="350" className="skip"/>
+                               <text x="90" y="355" fontSize="12" fill="#e74c3c">Skip Connection</text>
+                               <text x="50" y="380" fontSize="11" fill="#7f8c8d">Skip connections allow gradients to flow directly, enabling deeper networks</text>
+                             </svg>
+                           </div>
+                         </div>
                          <p style={{ 
                            fontSize: '14px', 
                            color: '#666', 
@@ -537,7 +850,7 @@ plt.show()`,
                            maxWidth: '600px',
                            margin: '10px auto 0'
                          }}>
-                           {modelDocs[model.id].figures![0].caption}
+                           {modelDocs[selectedModel].figures![0].caption}
                          </p>
                        </div>
                      )}
@@ -545,7 +858,7 @@ plt.show()`,
                      <div style={{ marginBottom: '25px' }}>
                        <h4 style={{ color: '#2c3e50', fontSize: '18px', marginBottom: '10px' }}>When to Use</h4>
                        <ul style={{ paddingLeft: '20px', lineHeight: '1.6', color: '#555', fontSize: '16px' }}>
-                         {modelDocs[model.id].when_to_use.map((item, index) => (
+                         {modelDocs[selectedModel].when_to_use.map((item, index) => (
                            <li key={index} style={{ marginBottom: '8px' }}>{item}</li>
                          ))}
                        </ul>
@@ -554,7 +867,7 @@ plt.show()`,
                      <div style={{ marginBottom: '25px' }}>
                        <h4 style={{ color: '#2c3e50', fontSize: '18px', marginBottom: '10px' }}>Key Features</h4>
                        <ul style={{ paddingLeft: '20px', lineHeight: '1.6', color: '#555', fontSize: '16px' }}>
-                         {modelDocs[model.id].features.map((feature, index) => (
+                         {modelDocs[selectedModel].features.map((feature, index) => (
                            <li key={index} style={{ marginBottom: '8px' }}>{feature}</li>
                          ))}
                        </ul>
@@ -563,7 +876,7 @@ plt.show()`,
                      <div>
                        <h4 style={{ color: '#2c3e50', fontSize: '18px', marginBottom: '10px' }}>Technical Details</h4>
                        <ul style={{ paddingLeft: '20px', lineHeight: '1.6', color: '#555', fontSize: '16px' }}>
-                         {modelDocs[model.id].technical_details.map((detail, index) => (
+                         {modelDocs[selectedModel].technical_details.map((detail, index) => (
                            <li key={index} style={{ marginBottom: '8px' }}>{detail}</li>
                          ))}
                        </ul>
@@ -572,18 +885,18 @@ plt.show()`,
 
                    {/* Preprocessing Section */}
                    <div id="preprocessing" style={{ marginBottom: '40px' }}>
-                     <h3 style={{ color: '#2c3e50', fontSize: '22px', marginBottom: '20px', borderBottom: '2px solid #007bff', paddingBottom: '8px' }}>Preprocessing</h3>
+                     <h3 style={{ color: '#2c3e50', fontSize: '22px', marginBottom: '20px', borderBottom: '2px solid #2c3e50', paddingBottom: '8px' }}>Preprocessing</h3>
                      <p style={{ marginBottom: '20px', color: '#555', fontSize: '16px', lineHeight: '1.8', maxWidth: '100%' }}>
                        Proper preprocessing is crucial for scVI performance. Follow these steps to prepare your data:
                      </p>
                      <div style={{ position: 'relative' }}>
                        <button
-                         onClick={() => copyToClipboard(modelDocs[model.id].preprocessing_code || '', `${model.id}-preproc`)}
+                         onClick={() => copyToClipboard(modelDocs[selectedModel].preprocessing_code || '', `${selectedModel}-preproc`)}
                          style={{
                            position: 'absolute',
                            top: '10px',
                            right: '10px',
-                           backgroundColor: '#007bff',
+                           backgroundColor: '#2c3e50',
                            color: 'white',
                            border: 'none',
                            padding: '5px 10px',
@@ -594,7 +907,7 @@ plt.show()`,
                          }}
                          title="Copy code to clipboard"
                        >
-                         {copiedState[`${model.id}-preproc`] ? 'Copied' : 'Copy'}
+                         {copiedState[`${selectedModel}-preproc`] ? 'Copied' : 'Copy'}
                        </button>
                        <div style={{
                          backgroundColor: '#f8f9fa',
@@ -608,14 +921,14 @@ plt.show()`,
                          color: '#495057',
                          overflow: 'auto'
                        }}>
-                         {modelDocs[model.id].preprocessing_code || 'Standard preprocessing pipeline for single-cell RNA sequencing data preparation.'}
+                         {modelDocs[selectedModel].preprocessing_code || 'Standard preprocessing pipeline for single-cell RNA sequencing data preparation.'}
                        </div>
                      </div>
                    </div>
 
                    {/* Mathematical Formulation Section */}
                    <div id="mathematical-formulation" style={{ marginBottom: '40px' }}>
-                     <h3 style={{ color: '#2c3e50', fontSize: '22px', marginBottom: '20px', borderBottom: '2px solid #007bff', paddingBottom: '8px' }}>Mathematical Formulation</h3>
+                     <h3 style={{ color: '#2c3e50', fontSize: '22px', marginBottom: '20px', borderBottom: '2px solid #2c3e50', paddingBottom: '8px' }}>Mathematical Formulation</h3>
                      <div style={{
                        backgroundColor: '#f8f9fa',
                        border: '1px solid #e9ecef',
@@ -627,24 +940,24 @@ plt.show()`,
                        whiteSpace: 'pre-line',
                        color: '#495057'
                      }}>
-                         {modelDocs[model.id].mathematical_formulation || 'Probabilistic generative model based on variational autoencoders for single-cell RNA sequencing data analysis.'}
+                         {modelDocs[selectedModel].mathematical_formulation || 'Probabilistic generative model based on variational autoencoders for single-cell RNA sequencing data analysis.'}
                      </div>
                    </div>
 
                    {/* Code Example Section */}
                    <div id="code-example" style={{ marginBottom: '40px' }}>
-                     <h3 style={{ color: '#2c3e50', fontSize: '22px', marginBottom: '20px', borderBottom: '2px solid #007bff', paddingBottom: '8px' }}>Code Example</h3>
+                     <h3 style={{ color: '#2c3e50', fontSize: '22px', marginBottom: '20px', borderBottom: '2px solid #2c3e50', paddingBottom: '8px' }}>Code Example</h3>
                      <p style={{ marginBottom: '20px', color: '#555', fontSize: '16px', lineHeight: '1.8', maxWidth: '100%' }}>
                        Complete workflow for training and using scVI on your single-cell data:
                      </p>
                      <div style={{ position: 'relative' }}>
                        <button
-                         onClick={() => copyToClipboard(modelDocs[model.id].code_example || '', `${model.id}-code`)}
+                         onClick={() => copyToClipboard(modelDocs[selectedModel].code_example || '', `${selectedModel}-code`)}
                          style={{
                            position: 'absolute',
                            top: '10px',
                            right: '10px',
-                           backgroundColor: '#007bff',
+                           backgroundColor: '#2c3e50',
                            color: 'white',
                            border: 'none',
                            padding: '5px 10px',
@@ -655,7 +968,7 @@ plt.show()`,
                          }}
                          title="Copy code to clipboard"
                        >
-                         {copiedState[`${model.id}-code`] ? 'Copied' : 'Copy'}
+                         {copiedState[`${selectedModel}-code`] ? 'Copied' : 'Copy'}
                        </button>
                        <div style={{
                          backgroundColor: '#f8f9fa',
@@ -669,32 +982,79 @@ plt.show()`,
                          color: '#495057',
                          overflow: 'auto'
                        }}>
-                         {modelDocs[model.id].code_example || 'Complete scVI training workflow with model setup, training, and downstream analysis.'}
+                         {modelDocs[selectedModel].code_example || 'Complete scVI training workflow with model setup, training, and downstream analysis.'}
                        </div>
                      </div>
                    </div>
 
                    {/* Visualization Section */}
                    <div id="visualization" style={{ marginBottom: '40px' }}>
-                     <h3 style={{ color: '#2c3e50', fontSize: '22px', marginBottom: '20px', borderBottom: '2px solid #007bff', paddingBottom: '8px' }}>Visualization</h3>
+                     <h3 style={{ color: '#2c3e50', fontSize: '22px', marginBottom: '20px', borderBottom: '2px solid #2c3e50', paddingBottom: '8px' }}>Visualization</h3>
                      <p style={{ marginBottom: '20px', color: '#555', fontSize: '16px', lineHeight: '1.8', maxWidth: '100%' }}>
                        Visualize and analyze your scVI results:
                      </p>
                      
-                     {/* UMAP Visualization Figure */}
-                     {modelDocs[model.id].figures && modelDocs[model.id].figures!.length > 1 && (
+                     {/* Classification Results Figure */}
                        <div style={{ marginBottom: '25px', textAlign: 'center' }}>
-                         <img 
-                           src={modelDocs[model.id].figures![1].url}
-                           alt={modelDocs[model.id].figures![1].alt}
-                           style={{ 
-                             maxWidth: '100%', 
-                             height: 'auto', 
-                             border: '1px solid #e0e0e0',
+                       <div style={{
+                         padding: '2rem',
+                         background: '#f8f9fa',
+                         border: '1px solid #e9ecef',
                              borderRadius: '8px',
-                             boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-                           }}
-                         />
+                         marginBottom: '10px'
+                       }}>
+                         <h4 style={{ color: '#2c3e50', marginBottom: '1rem' }}>Classification Results</h4>
+                         <div style={{ 
+                           background: 'white',
+                           padding: '20px',
+                           borderRadius: '6px',
+                           border: '1px solid #dee2e6'
+                         }}>
+                           <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px' }}>
+                             <div style={{ 
+                               width: '100px', 
+                               height: '100px', 
+                               background: '#ecf0f1', 
+                               border: '2px solid #34495e',
+                               borderRadius: '8px',
+                               display: 'flex',
+                               alignItems: 'center',
+                               justifyContent: 'center',
+                               marginRight: '20px'
+                             }}>
+                               <span style={{ color: '#34495e', fontSize: '12px' }}>Input Image</span>
+                             </div>
+                             <div style={{ flex: 1 }}>
+                               <h5 style={{ color: '#2c3e50', marginBottom: '15px' }}>Top-5 Predictions</h5>
+                               <div style={{ textAlign: 'left' }}>
+                                 <div style={{ marginBottom: '8px', display: 'flex', alignItems: 'center' }}>
+                                   <div style={{ width: '200px', height: '20px', background: '#3498db', marginRight: '10px', borderRadius: '3px' }}></div>
+                                   <span style={{ fontSize: '14px' }}>1. Golden Retriever (94.2%)</span>
+                                 </div>
+                                 <div style={{ marginBottom: '8px', display: 'flex', alignItems: 'center' }}>
+                                   <div style={{ width: '150px', height: '20px', background: '#3498db', opacity: 0.7, marginRight: '10px', borderRadius: '3px' }}></div>
+                                   <span style={{ fontSize: '14px' }}>2. Labrador Retriever (3.8%)</span>
+                                 </div>
+                                 <div style={{ marginBottom: '8px', display: 'flex', alignItems: 'center' }}>
+                                   <div style={{ width: '100px', height: '20px', background: '#3498db', opacity: 0.5, marginRight: '10px', borderRadius: '3px' }}></div>
+                                   <span style={{ fontSize: '14px' }}>3. Cocker Spaniel (1.2%)</span>
+                                 </div>
+                                 <div style={{ marginBottom: '8px', display: 'flex', alignItems: 'center' }}>
+                                   <div style={{ width: '50px', height: '20px', background: '#3498db', opacity: 0.3, marginRight: '10px', borderRadius: '3px' }}></div>
+                                   <span style={{ fontSize: '14px' }}>4. Beagle (0.5%)</span>
+                                 </div>
+                                 <div style={{ display: 'flex', alignItems: 'center' }}>
+                                   <div style={{ width: '30px', height: '20px', background: '#3498db', opacity: 0.2, marginRight: '10px', borderRadius: '3px' }}></div>
+                                   <span style={{ fontSize: '14px' }}>5. Setter (0.3%)</span>
+                                 </div>
+                               </div>
+                             </div>
+                           </div>
+                           <div style={{ borderTop: '1px solid #e9ecef', paddingTop: '15px', fontSize: '12px', color: '#6c757d' }}>
+                             Model: ResNet-18 | Dataset: ImageNet (1000 classes) | Processing Time: ~50ms
+                           </div>
+                         </div>
+                       </div>
                          <p style={{ 
                            fontSize: '14px', 
                            color: '#666', 
@@ -703,19 +1063,18 @@ plt.show()`,
                            maxWidth: '600px',
                            margin: '10px auto 0'
                          }}>
-                           {modelDocs[model.id].figures![1].caption}
+                         Example classification results showing top-5 predictions with confidence scores for an input image.
                          </p>
                        </div>
-                     )}
 
                      <div style={{ position: 'relative' }}>
                        <button
-                         onClick={() => copyToClipboard(modelDocs[model.id].visualization_code || '', `${model.id}-viz`)}
+                         onClick={() => copyToClipboard(modelDocs[selectedModel].visualization_code || '', `${selectedModel}-viz`)}
                          style={{
                            position: 'absolute',
                            top: '10px',
                            right: '10px',
-                           backgroundColor: '#007bff',
+                           backgroundColor: '#2c3e50',
                            color: 'white',
                            border: 'none',
                            padding: '5px 10px',
@@ -726,7 +1085,7 @@ plt.show()`,
                          }}
                          title="Copy code to clipboard"
                        >
-                         {copiedState[`${model.id}-viz`] ? 'Copied' : 'Copy'}
+                         {copiedState[`${selectedModel}-viz`] ? 'Copied' : 'Copy'}
                        </button>
                        <div style={{
                          backgroundColor: '#f8f9fa',
@@ -740,24 +1099,72 @@ plt.show()`,
                          color: '#495057',
                          overflow: 'auto'
                        }}>
-                         {modelDocs[model.id].visualization_code || 'Comprehensive visualization pipeline for scVI results including UMAP plots, training diagnostics, and differential expression analysis.'}
+                         {modelDocs[selectedModel].visualization_code || 'Comprehensive visualization pipeline for scVI results including UMAP plots, training diagnostics, and differential expression analysis.'}
                        </div>
                      </div>
 
-                     {/* Training Curve Figure */}
-                     {modelDocs[model.id].figures && modelDocs[model.id].figures!.length > 2 && (
+                     {/* Confidence Distribution Chart */}
                        <div style={{ marginTop: '25px', textAlign: 'center' }}>
-                         <img 
-                           src={modelDocs[model.id].figures![2].url}
-                           alt={modelDocs[model.id].figures![2].alt}
-                           style={{ 
-                             maxWidth: '100%', 
-                             height: 'auto', 
-                             border: '1px solid #e0e0e0',
+                       <div style={{
+                         padding: '2rem',
+                         background: '#f8f9fa',
+                         border: '1px solid #e9ecef',
                              borderRadius: '8px',
-                             boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-                           }}
-                         />
+                         marginBottom: '10px'
+                       }}>
+                         <h4 style={{ color: '#2c3e50', marginBottom: '1rem' }}>Confidence Distribution</h4>
+                         <div style={{ 
+                           background: 'white',
+                           padding: '20px',
+                           borderRadius: '6px',
+                           border: '1px solid #dee2e6'
+                         }}>
+                           <div style={{ marginBottom: '20px' }}>
+                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'end', height: '150px', marginBottom: '10px' }}>
+                               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '80px' }}>
+                                 <div style={{ width: '40px', height: '20px', background: '#e74c3c', marginBottom: '5px' }}></div>
+                                 <span style={{ fontSize: '12px', color: '#666' }}>0.0-0.2</span>
+                               </div>
+                               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '80px' }}>
+                                 <div style={{ width: '40px', height: '40px', background: '#e74c3c', marginBottom: '5px' }}></div>
+                                 <span style={{ fontSize: '12px', color: '#666' }}>0.2-0.4</span>
+                               </div>
+                               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '80px' }}>
+                                 <div style={{ width: '40px', height: '60px', background: '#f39c12', marginBottom: '5px' }}></div>
+                                 <span style={{ fontSize: '12px', color: '#666' }}>0.4-0.6</span>
+                               </div>
+                               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '80px' }}>
+                                 <div style={{ width: '40px', height: '110px', background: '#f39c12', marginBottom: '5px' }}></div>
+                                 <span style={{ fontSize: '12px', color: '#666' }}>0.6-0.8</span>
+                               </div>
+                               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '80px' }}>
+                                 <div style={{ width: '40px', height: '150px', background: '#27ae60', marginBottom: '5px' }}></div>
+                                 <span style={{ fontSize: '12px', color: '#666' }}>0.8-1.0</span>
+                               </div>
+                             </div>
+                             <div style={{ textAlign: 'center', marginTop: '20px' }}>
+                               <span style={{ fontSize: '14px', color: '#2c3e50', fontWeight: '500' }}>Confidence Score Range</span>
+                             </div>
+                           </div>
+                           <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginTop: '15px' }}>
+                             <div style={{ display: 'flex', alignItems: 'center' }}>
+                               <div style={{ width: '15px', height: '15px', background: '#27ae60', marginRight: '5px' }}></div>
+                               <span style={{ fontSize: '12px' }}>High Confidence (&ge;0.8)</span>
+                             </div>
+                             <div style={{ display: 'flex', alignItems: 'center' }}>
+                               <div style={{ width: '15px', height: '15px', background: '#f39c12', marginRight: '5px' }}></div>
+                               <span style={{ fontSize: '12px' }}>Medium Confidence (0.4-0.8)</span>
+                             </div>
+                             <div style={{ display: 'flex', alignItems: 'center' }}>
+                               <div style={{ width: '15px', height: '15px', background: '#e74c3c', marginRight: '5px' }}></div>
+                               <span style={{ fontSize: '12px' }}>Low Confidence (&lt;0.4)</span>
+                             </div>
+                           </div>
+                           <div style={{ borderTop: '1px solid #e9ecef', paddingTop: '15px', marginTop: '15px', fontSize: '12px', color: '#6c757d' }}>
+                             Total Predictions: 1000 | High Confidence: 642 (64.2%)
+                           </div>
+                         </div>
+                       </div>
                          <p style={{ 
                            fontSize: '14px', 
                            color: '#666', 
@@ -766,15 +1173,14 @@ plt.show()`,
                            maxWidth: '600px',
                            margin: '10px auto 0'
                          }}>
-                           {modelDocs[model.id].figures![2].caption}
+                         Confidence score distribution across different object categories, demonstrating the model's prediction certainty.
                          </p>
                        </div>
-                     )}
                    </div>
 
                    {/* References Section */}
                    <div id="references" style={{ marginBottom: '20px' }}>
-                     <h3 style={{ color: '#2c3e50', fontSize: '22px', marginBottom: '20px', borderBottom: '2px solid #007bff', paddingBottom: '8px' }}>References</h3>
+                     <h3 style={{ color: '#2c3e50', fontSize: '22px', marginBottom: '20px', borderBottom: '2px solid #2c3e50', paddingBottom: '8px' }}>References</h3>
                      <div style={{
                        backgroundColor: '#f8f9fa',
                        border: '1px solid #e9ecef',
@@ -783,25 +1189,24 @@ plt.show()`,
                        lineHeight: '1.6'
                      }}>
                        <p style={{ margin: 0, color: '#495057', fontSize: '16px' }}>
-                         {modelDocs[model.id].citation}
+                         {modelDocs[selectedModel].citation}
                        </p>
                        <div style={{ marginTop: '15px', fontSize: '14px', color: '#666' }}>
                          <p><strong>Additional Resources:</strong></p>
                          <ul style={{ paddingLeft: '20px', margin: '10px 0 0 0' }}>
-                           <li><a href="https://scvi-tools.org/" target="_blank" rel="noopener noreferrer" style={{ color: '#007bff' }}>scvi-tools Documentation</a></li>
-                           <li><a href="https://github.com/scverse/scvi-tools" target="_blank" rel="noopener noreferrer" style={{ color: '#007bff' }}>GitHub Repository</a></li>
-                           <li><a href="https://scvi-tools.org/en/stable/tutorials/notebooks/api_overview.html" target="_blank" rel="noopener noreferrer" style={{ color: '#007bff' }}>API Overview Tutorial</a></li>
+                           <li><a href="https://scvi-tools.org/" target="_blank" rel="noopener noreferrer" style={{ color: '#2c3e50' }}>scvi-tools Documentation</a></li>
+                           <li><a href="https://github.com/scverse/scvi-tools" target="_blank" rel="noopener noreferrer" style={{ color: '#2c3e50' }}>GitHub Repository</a></li>
+                           <li><a href="https://scvi-tools.org/en/stable/tutorials/notebooks/api_overview.html" target="_blank" rel="noopener noreferrer" style={{ color: '#2c3e50' }}>API Overview Tutorial</a></li>
                          </ul>
                        </div>
                      </div>
                    </div>
                 </div>
               </div>
-            )
-          ))}
+            )}
 
           {/* Default content when no model is selected */}
-          {!models.some(model => expandedDocs[model.id]) && (
+          {!selectedModel && (
             <div style={{
               textAlign: 'center',
               padding: '60px 20px',
@@ -823,39 +1228,39 @@ plt.show()`,
            flexShrink: 0,
            marginLeft: '10px'
          }}>
-           {models.some(model => expandedDocs[model.id]) ? (
+           {selectedModel ? (
              <>
                <h3 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '15px', color: '#2c3e50' }}>
                  Contents
                </h3>
                <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                  <li style={{ marginBottom: '8px' }}>
-                   <a href="#overview" style={{ color: '#007bff', textDecoration: 'none', fontSize: '14px' }}>
+                   <a href="#overview" style={{ color: '#2c3e50', textDecoration: 'none', fontSize: '14px' }}>
                      Overview
                    </a>
                  </li>
                  <li style={{ marginBottom: '8px' }}>
-                   <a href="#preprocessing" style={{ color: '#007bff', textDecoration: 'none', fontSize: '14px' }}>
+                   <a href="#preprocessing" style={{ color: '#2c3e50', textDecoration: 'none', fontSize: '14px' }}>
                      Preprocessing
                    </a>
                  </li>
                  <li style={{ marginBottom: '8px' }}>
-                   <a href="#mathematical-formulation" style={{ color: '#007bff', textDecoration: 'none', fontSize: '14px' }}>
+                   <a href="#mathematical-formulation" style={{ color: '#2c3e50', textDecoration: 'none', fontSize: '14px' }}>
                      Mathematical Formulation
                    </a>
                  </li>
                  <li style={{ marginBottom: '8px' }}>
-                   <a href="#code-example" style={{ color: '#007bff', textDecoration: 'none', fontSize: '14px' }}>
+                   <a href="#code-example" style={{ color: '#2c3e50', textDecoration: 'none', fontSize: '14px' }}>
                      Code Example
                    </a>
                  </li>
                  <li style={{ marginBottom: '8px' }}>
-                   <a href="#visualization" style={{ color: '#007bff', textDecoration: 'none', fontSize: '14px' }}>
+                   <a href="#visualization" style={{ color: '#2c3e50', textDecoration: 'none', fontSize: '14px' }}>
                      Visualization
                    </a>
                  </li>
                  <li style={{ marginBottom: '8px' }}>
-                   <a href="#references" style={{ color: '#007bff', textDecoration: 'none', fontSize: '14px' }}>
+                   <a href="#references" style={{ color: '#2c3e50', textDecoration: 'none', fontSize: '14px' }}>
                      References
                    </a>
                  </li>
