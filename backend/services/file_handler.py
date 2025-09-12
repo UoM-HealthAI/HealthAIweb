@@ -17,7 +17,7 @@ class FileValidator:
     MAX_FILE_SIZE = 500 * 1024 * 1024  # 500MB in bytes
     
     # Supported file extensions
-    SUPPORTED_EXTENSIONS = {".csv", ".h5ad"}
+    SUPPORTED_EXTENSIONS = {".csv", ".h5ad", ".jpg", ".jpeg", ".png"}
     
     @classmethod
     def validate_file(cls, file_path: Path, file_size: int) -> Dict[str, Any]:
@@ -77,6 +77,8 @@ class FileValidator:
                 validation_result["validation_details"] = cls._validate_csv(file_path)
             elif file_extension == ".h5ad":
                 validation_result["validation_details"] = cls._validate_h5ad(file_path)
+            elif file_extension in {".jpg", ".jpeg", ".png"}:
+                validation_result["validation_details"] = cls._validate_image(file_path)
                 
         except ValueError as e:
             # Handle known validation errors
@@ -158,6 +160,44 @@ class FileValidator:
             
         except Exception as e:
             raise ValueError(f"H5AD validation error: {str(e)}")
+    
+    @classmethod
+    def _validate_image(cls, file_path: Path) -> Dict[str, Any]:
+        """Validate image file structure"""
+        try:
+            # Try to open the image file to verify it's a valid image
+            from PIL import Image
+            
+            with Image.open(file_path) as img:
+                width, height = img.size
+                format_name = img.format
+                mode = img.mode
+                
+                # Basic validation
+                if width < 32 or height < 32:
+                    raise ValueError("Image too small (minimum 32x32 pixels)")
+                
+                if width > 10000 or height > 10000:
+                    raise ValueError("Image too large (maximum 10000x10000 pixels)")
+                
+                return {
+                    "format": format_name.lower() if format_name else "unknown",
+                    "dimensions": f"{width}x{height}",
+                    "width": width,
+                    "height": height,
+                    "mode": mode,
+                    "status": "valid"
+                }
+                
+        except ImportError:
+            # Pillow not installed - basic validation only
+            return {
+                "format": "image",
+                "status": "valid",
+                "note": "Basic validation only (Pillow not available for detailed analysis)"
+            }
+        except Exception as e:
+            raise ValueError(f"Image validation error: {str(e)}")
 
 
 def validate_uploaded_file(file_path: Path, file_size: int) -> Dict[str, Any]:

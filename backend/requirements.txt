@@ -15,10 +15,12 @@ PyYAML==6.0.1
 
 # AI/ML libraries for model execution (optimized for deployment)
 torch>=2.5.0
+torchvision>=0.20.0
 anndata>=0.8.0
 scanpy>=1.9.3
 matplotlib>=3.8.0
 seaborn>=0.13.0
+Pillow>=10.0.0
 # scvi-tools==0.20.3  # Temporarily disabled for deployment
 
 # HTTP requests (required by scvi-tools)

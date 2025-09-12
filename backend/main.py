@@ -84,6 +84,44 @@ def _make_paths_relative(file_paths: dict, base_dir: str = "outputs") -> dict:
     return web_paths
 
 
+def _extract_function_source(file_path: str, function_name: str) -> str:
+    """Extract a top-level function's source code from a Python file as a string.
+    This is a lightweight parser that captures from the 'def' line until the next
+    top-level 'def ' or end-of-file. Returns empty string if not found.
+    """
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            lines = f.readlines()
+        start_idx = -1
+        for i, line in enumerate(lines):
+            if line.startswith(f"def {function_name}("):
+                start_idx = i
+                break
+        if start_idx == -1:
+            return ""
+        # Capture until next top-level def
+        end_idx = len(lines)
+        for j in range(start_idx + 1, len(lines)):
+            if lines[j].startswith("def "):
+                end_idx = j
+                break
+        return "".join(lines[start_idx:end_idx]).rstrip()
+    except Exception:
+        return ""
+
+
+def _read_file_text(file_path: str, max_chars: int = 4000) -> str:
+    """Read a file and return at most max_chars characters."""
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        if len(content) > max_chars:
+            return content[:max_chars] + "\n# ... truncated ..."
+        return content
+    except Exception:
+        return ""
+
+
 @app.get("/")
 async def root():
     """Serve React app for root path"""
@@ -141,23 +179,60 @@ async def get_models():
 async def get_model_documentation(model_id: str):
     """Get documentation for a specific model"""
     try:
+        # First check if model exists
         model_executor = get_model_executor()
         if model_id not in model_executor.available_models:
             raise HTTPException(status_code=404, detail=f"Model '{model_id}' not found")
         
-        model_info = model_executor.available_models[model_id]
-        config = model_info["config"]
-        documentation = config.get("documentation", {})
+        # Look for documentation file in model registry
+        doc_path = Path(f"model_registry/{model_id}/documentation.json")
         
-        if not documentation:
-            raise HTTPException(status_code=404, detail=f"No documentation found for model '{model_id}'")
-        
+        if doc_path.exists():
+            # Load from JSON file (preferred method)
+            with open(doc_path, 'r', encoding='utf-8') as f:
+                documentation = json.load(f)
+        else:
+            # Fallback to config file documentation
+            model_info = model_executor.available_models[model_id]
+            config = model_info["config"]
+            documentation = config.get("documentation", {})
+            
+            if not documentation:
+                raise HTTPException(status_code=404, detail=f"No documentation found for model '{model_id}'")
+        # Auto-populate missing code fields from model.py to reduce manual edits
+        try:
+            model_info = model_executor.available_models[model_id]
+            model_py = str(model_info["model_path"])
+            # If fields are missing or empty, populate sensible content
+            if not documentation.get("code_example"):
+                # Prefer the main entry function; otherwise include whole file (truncated)
+                main_fn = model_info["config"].get("interface", {}).get("main_function", "run_model")
+                src = _extract_function_source(model_py, main_fn)
+                if not src:
+                    src = _read_file_text(model_py)
+                documentation["code_example"] = src or documentation.get("code_example", "")
+            if not documentation.get("preprocessing_code"):
+                prep_src = _extract_function_source(model_py, "_preprocess_data")
+                if prep_src:
+                    documentation["preprocessing_code"] = prep_src
+            if not documentation.get("visualization_code"):
+                viz_src = _extract_function_source(model_py, "_generate_visualizations")
+                if viz_src:
+                    documentation["visualization_code"] = viz_src
+        except Exception:
+            # Non-fatal; keep whatever we have
+            pass
+
         return {
             "status": "success",
             "model_id": model_id,
             "documentation": documentation
         }
         
+    except HTTPException:
+        raise
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=500, detail=f"Invalid documentation format for model: {model_id}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving documentation: {str(e)}")
 

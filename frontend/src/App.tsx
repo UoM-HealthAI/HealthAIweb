@@ -4,7 +4,7 @@ import Home from './pages/Home';
 import Models from './pages/Models';
 import Upload from './pages/Upload';
 import Results from './pages/Results';
-import Help from './pages/Help';
+import Specifications from './pages/Specifications';
 import './App.css';
 
 function App() {
@@ -18,7 +18,7 @@ function App() {
             <Link to="/">Home</Link>
             <Link to="/models">Models</Link>
             <Link to="/upload">Upload</Link>
-            <Link to="/help">Help</Link>
+            <Link to="/specifications">Specifications</Link>
           </div>
         </nav>
 
@@ -29,7 +29,7 @@ function App() {
             <Route path="/models" element={<Models />} />
             <Route path="/upload" element={<Upload />} />
             <Route path="/results/:taskId" element={<Results />} />
-            <Route path="/help" element={<Help />} />
+            <Route path="/specifications" element={<Specifications />} />
           </Routes>
         </main>
       </div>

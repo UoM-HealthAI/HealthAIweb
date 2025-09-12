@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { ModelParameterForm } from '../components/ModelParameterForm';
+import { getModelConfig, getAllModelConfigs } from '../config/modelConfig';
 
 function Upload() {
   // State management: information the component needs to remember
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedModel, setSelectedModel] = useState('scvi_model');
-  const [parameters, setParameters] = useState({
-    n_latent: 10,
-    n_epochs: 400  // Default as per model specification
-  });
+  const [parameters, setParameters] = useState<Record<string, any>>({});
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -16,10 +15,25 @@ function Upload() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
+  // Get current model configuration
+  const currentModelConfig = getModelConfig(selectedModel);
+  const allModelConfigs = getAllModelConfigs();
+
+  // Initialize parameters when model changes
+  React.useEffect(() => {
+    if (currentModelConfig) {
+      const defaultParams: Record<string, any> = {};
+      currentModelConfig.parameters.forEach(param => {
+        defaultParams[param.name] = param.defaultValue;
+      });
+      setParameters(defaultParams);
+    }
+  }, [selectedModel, currentModelConfig]);
+
   // Get model information from URL (?model=scvi_model format)
   React.useEffect(() => {
     const modelFromUrl = searchParams.get('model');
-    if (modelFromUrl) {
+    if (modelFromUrl && getModelConfig(modelFromUrl)) {
       setSelectedModel(modelFromUrl);
     }
   }, [searchParams]);
@@ -27,13 +41,14 @@ function Upload() {
   // Function executed when file is selected
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      // Check file format
-      const allowedTypes = ['.csv', '.h5ad'];
+    if (file && currentModelConfig) {
+      // Check file format based on current model configuration
+      const allowedTypes = currentModelConfig.supportedFileTypes;
       const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
       
       if (!allowedTypes.includes(fileExtension)) {
-        setError('Unsupported file format. Please select a .csv or .h5ad file.');
+        const allowedTypesStr = allowedTypes.join(', ');
+        setError(`Unsupported file format. Please select a file with one of these extensions: ${allowedTypesStr}`);
         setSelectedFile(null);
         return;
       }
@@ -45,7 +60,7 @@ function Upload() {
   };
 
   // Function executed when parameter value changes
-  const handleParameterChange = (name: string, value: number) => {
+  const handleParameterChange = (name: string, value: any) => {
     setParameters(prev => ({
       ...prev,
       [name]: value
@@ -105,7 +120,10 @@ function Upload() {
       <div style={{textAlign: 'center', marginBottom: '2rem'}}>
         <h1 className="page-title">Upload Your Data</h1>
         <p style={{fontSize: '1.1rem', color: '#666', marginBottom: '1rem'}}>
-          Upload your single-cell RNA sequencing data for AI-powered analysis
+          {currentModelConfig 
+            ? `Upload your data for ${currentModelConfig.description.toLowerCase()} analysis`
+            : 'Upload your data for AI-powered analysis'
+          }
         </p>
         
         {selectedModel && (
@@ -135,7 +153,11 @@ function Upload() {
             className="form-control"
             style={{fontSize: '1.1rem', padding: '0.75rem'}}
           >
-            <option value="scvi_model">scVI Model - Dimensionality reduction & batch correction</option>
+            {allModelConfigs.map((config) => (
+              <option key={config.id} value={config.id}>
+                {config.name} - {config.description}
+              </option>
+            ))}
           </select>
           {!selectedModel && (
             <p style={{color: '#856404', marginTop: '0.5rem', fontSize: '0.9rem'}}>
@@ -148,7 +170,10 @@ function Upload() {
         <div className="card">
           <h3>Step 2: Upload Your Data File</h3>
           <p style={{color: '#666', marginBottom: '1rem'}}>
-            Select your single-cell RNA sequencing data file. Supported formats: .h5ad (recommended), .csv
+            {currentModelConfig 
+              ? `Select your data file. Supported formats: ${currentModelConfig.supportedFileTypes.join(', ')}`
+              : 'Select your data file for analysis.'
+            }
           </p>
           
           <div style={{
@@ -161,7 +186,7 @@ function Upload() {
           }}>
             <input
               type="file"
-              accept=".csv,.h5ad"
+              accept={currentModelConfig ? currentModelConfig.supportedFileTypes.join(',') : '*'}
               onChange={handleFileChange}
               className="form-control"
               style={{marginBottom: '1rem'}}
@@ -202,88 +227,26 @@ function Upload() {
             marginTop: '1rem'
           }}>
             <p style={{color: '#856404', margin: 0, fontSize: '0.9rem'}}>
-              <strong>Tip:</strong> .h5ad files are recommended as they preserve metadata and are faster to process
+              <strong>Tip:</strong> {currentModelConfig ? currentModelConfig.tipText : 'Choose the appropriate file format for your selected model'}
             </p>
           </div>
         </div>
 
         {/* Parameter settings */}
-        <div className="card">
-          <h3>Step 3: Configure Parameters</h3>
-          <p style={{color: '#666', marginBottom: '1rem'}}>
-            Adjust model parameters to optimize results for your data. Default values work well for most datasets.
-          </p>
-          
-          <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem'}}>
-            <div style={{
-              border: '1px solid #e0e0e0',
-              borderRadius: '8px',
-              padding: '1rem',
-              background: '#f8f9fa'
-            }}>
-              <label style={{display: 'block', marginBottom: '0.5rem'}}>
-                <strong>Latent Dimensions</strong>
-                <span style={{color: '#666', fontSize: '0.9rem', display: 'block'}}>
-                  Lower-dimensional representation size (5-50)
-                </span>
-              </label>
-              <input
-                type="number"
-                value={parameters.n_latent}
-                onChange={(e) => handleParameterChange('n_latent', parseInt(e.target.value))}
-                min="5"
-                max="50"
-                className="form-control"
-                style={{fontSize: '1.1rem', padding: '0.75rem'}}
-              />
-              <small style={{color: '#666', fontSize: '0.8rem'}}>
-                Default: 10. Higher values (15-50) for complex data, lower (5-8) for simple data or quick testing.
-              </small>
-            </div>
-            
-            <div style={{
-              border: '1px solid #e0e0e0',
-              borderRadius: '8px',
-              padding: '1rem',
-              background: '#f8f9fa'
-            }}>
-              <label style={{display: 'block', marginBottom: '0.5rem'}}>
-                <strong>Training Epochs</strong>
-                <span style={{color: '#666', fontSize: '0.9rem', display: 'block'}}>
-                  Number of training iterations (100-1000)
-                </span>
-              </label>
-              <input
-                type="number"
-                value={parameters.n_epochs}
-                onChange={(e) => handleParameterChange('n_epochs', parseInt(e.target.value))}
-                min="100"
-                max="1000"
-                className="form-control"
-                style={{fontSize: '1.1rem', padding: '0.75rem'}}
-              />
-              <small style={{color: '#666', fontSize: '0.8rem'}}>
-                Default: 400. Use 100-200 for quick testing, 300-500 for standard analysis, 500-1000 for high quality.
-              </small>
-            </div>
-          </div>
-          
-          <div style={{
-            background: '#e7f3ff',
-            border: '1px solid #b8daff',
-            borderRadius: '4px',
-            padding: '0.75rem',
-            marginTop: '1rem'
-          }}>
-            <p style={{color: '#004085', margin: 0, fontSize: '0.9rem'}}>
-              <strong>Parameter Guidelines:</strong><br/>
-              • <strong>Quick Testing:</strong> Latent: 5-8, Epochs: 100-200 (~2-5 min)<br/>
-              • <strong>Standard Analysis:</strong> Latent: 10-15, Epochs: 300-500 (~5-15 min)<br/>
-              • <strong>High Quality:</strong> Latent: 15-30, Epochs: 500-800 (~15-30 min)<br/>
-              • <strong>Research Grade:</strong> Latent: 30-50, Epochs: 800-1000 (~30-60 min)
+        {currentModelConfig && currentModelConfig.parameters.length > 0 && (
+          <div className="card">
+            <h3>Step 3: Configure Parameters</h3>
+            <p style={{color: '#666', marginBottom: '1rem'}}>
+              Adjust model parameters to optimize results for your data. Default values work well for most datasets.
             </p>
+            
+            <ModelParameterForm
+              parameters={currentModelConfig.parameters}
+              values={parameters}
+              onChange={handleParameterChange}
+            />
           </div>
-        </div>
+        )}
 
         {/* Error message */}
         {error && (
@@ -307,7 +270,7 @@ function Upload() {
               width: '100%', 
               fontSize: '1.3rem',
               padding: '1rem 2rem',
-              background: uploading ? '#6c757d' : (!selectedFile ? '#dee2e6' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'),
+              background: uploading ? '#6c757d' : (!selectedFile ? '#dee2e6' : '#2c3e50'),
               border: 'none',
               borderRadius: '8px',
               fontWeight: 'bold',
@@ -326,7 +289,10 @@ function Upload() {
               marginTop: '1rem', 
               fontSize: '0.9rem'
             }}>
-              Estimated processing time: 2-10 minutes depending on data size
+              {currentModelConfig 
+                ? `Estimated processing time: ${currentModelConfig.processingTimeEstimate}`
+                : 'Processing time varies by model and data size'
+              }
             </p>
           )}
           

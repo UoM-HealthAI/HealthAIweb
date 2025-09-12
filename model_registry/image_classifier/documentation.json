@@ -1,0 +1,51 @@
+{
+  "simple_explanation": "Image Classification AI is a computer vision model that analyzes photographs and automatically identifies what objects, animals, or scenes are present in them. Using deep neural networks trained on millions of images, it can recognize thousands of different categories like 'dog', 'car', 'flower', 'building', etc., and provides confidence scores indicating how certain it is about each prediction. This technology is commonly used in photo tagging, content moderation, medical imaging, and autonomous systems.",
+  "when_to_use": [
+    "Automatically categorizing and tagging large photo collections",
+    "Building content-aware applications that need to understand images",
+    "Quality control in manufacturing by identifying defective products",
+    "Medical imaging analysis for diagnostic assistance",
+    "Wildlife monitoring and species identification from camera traps",
+    "Content moderation for social media platforms",
+    "Retail applications for product recognition and inventory management"
+  ],
+  "features": [
+    "Multi-class object recognition with support for 1000+ ImageNet categories",
+    "Confidence scoring with probabilistic outputs for each prediction",
+    "Pre-trained ResNet architecture optimized for accuracy and speed",
+    "Automatic image preprocessing including resizing and normalization",
+    "Batch processing capability for multiple images",
+    "GPU acceleration support for faster inference",
+    "Robust handling of various image formats (JPEG, PNG)"
+  ],
+  "technical_details": [
+    "Architecture: ResNet-18 (Residual Neural Network with 18 layers)",
+    "Training dataset: ImageNet-1K with 1.2 million training images",
+    "Input resolution: 224×224 pixels with 3 color channels (RGB)",
+    "Output: 1000-dimensional probability distribution over ImageNet classes",
+    "Preprocessing: Standard ImageNet normalization (mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])",
+    "Framework: PyTorch with torchvision for model loading and image transforms",
+    "Inference time: ~50-200ms per image on modern CPU, ~10-50ms on GPU"
+  ],
+  "citation": "He, K., Zhang, X., Ren, S., & Sun, J. (2016). Deep residual learning for image recognition. In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 770-778). DOI: 10.1109/CVPR.2016.90",
+  "mathematical_formulation": "**ResNet Architecture:**\n\nThe ResNet model uses residual connections to enable training of very deep networks:\n\n**Residual Block:**\nF(x) = H(x) - x\nH(x) = F(x) + x\n\nWhere:\n- x is the input to the residual block\n- F(x) is the residual mapping to be learned\n- H(x) is the desired underlying mapping\n\n**Classification Layer:**\nFor an input image I, the model computes:\n\n1. **Feature Extraction:**\n   f = ResNet(I) ∈ ℝ^d\n\n2. **Classification:**\n   logits = Wf + b\n   P(class_i | I) = softmax(logits_i) = exp(logits_i) / Σⱼ exp(logits_j)\n\n**Loss Function (during training):**\nL = -Σᵢ yᵢ log(P(class_i | I))\n\nWhere yᵢ is the ground truth label (one-hot encoded)",
+  "preprocessing_code": "# Image preprocessing pipeline for classification\nfrom PIL import Image\nimport torch\nimport torchvision.transforms as transforms\n\n# Define standard ImageNet preprocessing\ntransform = transforms.Compose([\n    transforms.Resize((224, 224)),  # Resize to model input size\n    transforms.ToTensor(),          # Convert PIL to tensor [0,1]\n    transforms.Normalize(           # Normalize with ImageNet stats\n        mean=[0.485, 0.456, 0.406],\n        std=[0.229, 0.224, 0.225]\n    )\n])\n\ndef preprocess_image(image_path: str) -> torch.Tensor:\n    \"\"\"Load and preprocess image for classification\"\"\"\n    # Load image and convert to RGB\n    image = Image.open(image_path).convert('RGB')\n    \n    # Apply transformations\n    image_tensor = transform(image)\n    \n    # Add batch dimension [1, 3, 224, 224]\n    image_tensor = image_tensor.unsqueeze(0)\n    \n    return image_tensor\n\n# Example usage\nimage_tensor = preprocess_image('path/to/your/image.jpg')\nprint(f\"Preprocessed image shape: {image_tensor.shape}\")\nprint(f\"Tensor range: [{image_tensor.min():.3f}, {image_tensor.max():.3f}]\")",
+  "algorithm_description": "The image classification algorithm employs a Residual Neural Network (ResNet) architecture that revolutionized deep learning by introducing skip connections to solve the vanishing gradient problem. The process begins with loading a pre-trained ResNet model that has learned rich feature representations from millions of ImageNet images. Input images are first preprocessed by resizing to 224×224 pixels and normalizing pixel values using ImageNet statistics. The ResNet processes the image through multiple convolutional layers with residual blocks, where each block learns residual mappings F(x) = H(x) - x, allowing gradients to flow directly through skip connections. The final feature representation is passed through a fully connected layer to produce logits for 1000 ImageNet classes, which are then converted to probabilities using the softmax function. The model outputs the top-k predictions with confidence scores, enabling applications to make informed decisions based on prediction certainty.",
+  "figures": [
+    {
+      "url": "/images/resnet-architecture.svg",
+      "caption": "ResNet-18 architecture showing residual blocks with skip connections that enable training of deeper networks without degradation.",
+      "alt": "ResNet architecture diagram with residual blocks"
+    },
+    {
+      "url": "/images/classification-results.svg",
+      "caption": "Example classification results showing top-5 predictions with confidence scores for an input image.",
+      "alt": "Image classification results visualization"
+    },
+    {
+      "url": "/images/confidence-distribution.svg",
+      "caption": "Confidence score distribution across different object categories, demonstrating the model's prediction certainty.",
+      "alt": "Classification confidence distribution chart"
+    }
+  ]
+}

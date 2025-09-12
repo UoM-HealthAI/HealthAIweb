@@ -1,0 +1,84 @@
+<svg width="600" height="400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .title { font: bold 16px sans-serif; fill: #2c3e50; }
+      .layer { font: 12px sans-serif; fill: #34495e; }
+      .arrow { stroke: #2c3e50; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+      .block { fill: #ecf0f1; stroke: #34495e; stroke-width: 2; }
+      .skip { stroke: #e74c3c; stroke-width: 2; fill: none; stroke-dasharray: 5,5; }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#2c3e50" />
+    </marker>
+  </defs>
+  
+  <!-- Title -->
+  <text x="300" y="30" text-anchor="middle" class="title">ResNet-18 Architecture</text>
+  
+  <!-- Input -->
+  <rect x="50" y="60" width="80" height="40" class="block"/>
+  <text x="90" y="85" text-anchor="middle" class="layer">Input</text>
+   <text x="90" y="110" text-anchor="middle" font-size="10" fill="#7f8c8d">224×224×3</text>
+  
+  <!-- Conv1 -->
+  <rect x="180" y="60" width="80" height="40" class="block"/>
+  <text x="220" y="85" text-anchor="middle" class="layer">Conv1</text>
+   <text x="220" y="110" text-anchor="middle" font-size="10" fill="#7f8c8d">112×112×64</text>
+  
+  <!-- Residual Block 1 -->
+  <rect x="310" y="40" width="80" height="80" class="block"/>
+  <text x="350" y="65" text-anchor="middle" class="layer">ResBlock 1</text>
+  <rect x="320" y="75" width="60" height="15" fill="#3498db" opacity="0.7"/>
+   <text x="350" y="85" text-anchor="middle" font-size="10" fill="white">Conv 3×3</text>
+  <rect x="320" y="95" width="60" height="15" fill="#3498db" opacity="0.7"/>
+   <text x="350" y="105" text-anchor="middle" font-size="10" fill="white">Conv 3×3</text>
+  
+  <!-- Residual Block 2 -->
+  <rect x="440" y="40" width="80" height="80" class="block"/>
+  <text x="480" y="65" text-anchor="middle" class="layer">ResBlock 2</text>
+  <rect x="450" y="75" width="60" height="15" fill="#3498db" opacity="0.7"/>
+   <text x="480" y="85" text-anchor="middle" font-size="10" fill="white">Conv 3×3</text>
+  <rect x="450" y="95" width="60" height="15" fill="#3498db" opacity="0.7"/>
+   <text x="480" y="105" text-anchor="middle" font-size="10" fill="white">Conv 3×3</text>
+  
+  <!-- Global Average Pool -->
+  <rect x="180" y="180" width="80" height="40" class="block"/>
+  <text x="220" y="205" text-anchor="middle" class="layer">Global Pool</text>
+   <text x="220" y="230" text-anchor="middle" font-size="10" fill="#7f8c8d">1×1×512</text>
+  
+  <!-- FC Layer -->
+  <rect x="310" y="180" width="80" height="40" class="block"/>
+  <text x="350" y="205" text-anchor="middle" class="layer">FC</text>
+  <text x="350" y="230" text-anchor="middle" font-size="10" fill="#7f8c8d">1000 classes</text>
+  
+  <!-- Output -->
+  <rect x="440" y="180" width="80" height="40" class="block"/>
+  <text x="480" y="205" text-anchor="middle" class="layer">Output</text>
+  <text x="480" y="230" text-anchor="middle" font-size="10" fill="#7f8c8d">Probabilities</text>
+  
+  <!-- Arrows -->
+  <line x1="130" y1="80" x2="175" y2="80" class="arrow"/>
+  <line x1="260" y1="80" x2="305" y2="80" class="arrow"/>
+  <line x1="390" y1="80" x2="435" y2="80" class="arrow"/>
+  <line x1="480" y1="120" x2="480" y2="140" class="arrow"/>
+  <line x1="480" y1="140" x2="220" y2="140" class="arrow"/>
+  <line x1="220" y1="140" x2="220" y2="175" class="arrow"/>
+  <line x1="260" y1="200" x2="305" y2="200" class="arrow"/>
+  <line x1="390" y1="200" x2="435" y2="200" class="arrow"/>
+  
+  <!-- Skip connections -->
+  <path d="M 310 80 Q 280 50 280 80 Q 280 110 390 80" class="skip"/>
+  <path d="M 440 80 Q 410 50 410 80 Q 410 110 520 80" class="skip"/>
+  
+  <!-- Skip connection labels -->
+  <text x="300" y="45" font-size="10" fill="#e74c3c">Skip Connection</text>
+  <text x="430" y="45" font-size="10" fill="#e74c3c">Skip Connection</text>
+  
+  <!-- Legend -->
+  <text x="50" y="300" class="title">Key Components:</text>
+  <rect x="50" y="320" width="15" height="15" class="block"/>
+  <text x="75" y="332" font-size="12" fill="#34495e">Convolutional Layer</text>
+  <line x1="50" y1="350" x2="80" y2="350" class="skip"/>
+  <text x="90" y="355" font-size="12" fill="#e74c3c">Skip Connection</text>
+  <text x="50" y="380" font-size="11" fill="#7f8c8d">Skip connections allow gradients to flow directly, enabling deeper networks</text>
+</svg>
