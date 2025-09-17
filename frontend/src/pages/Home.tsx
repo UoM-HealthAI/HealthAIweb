@@ -2,143 +2,448 @@ import React from 'react';
 
 function Home() {
   return (
-    <div>
-      <div style={{textAlign: 'center', marginBottom: '2rem'}}>
-        <h1 className="page-title">HealthAI Web Platform</h1>
-        <p style={{fontSize: '1.2rem', color: '#666', marginTop: '1rem'}}>
-          Advanced AI-powered analysis platform for biomedical research
+    <div style={{ 
+      maxWidth: '1200px', 
+      margin: '0 auto', 
+      padding: '2rem',
+      fontFamily: '"Times New Roman", serif',
+      lineHeight: '1.6'
+    }}>
+      {/* Header */}
+      <header style={{
+        textAlign: 'center',
+        marginBottom: '4rem',
+        paddingBottom: '2rem',
+        borderBottom: '2px solid #e0e0e0'
+      }}>
+        <h1 style={{
+          fontSize: '2.8rem',
+          fontWeight: '400',
+          color: '#2c3e50',
+          marginBottom: '1rem',
+          letterSpacing: '0.02em'
+        }}>
+          HealthAI Web Platform
+        </h1>
+        <p style={{
+          fontSize: '1.2rem',
+          color: '#5a5a5a',
+          fontStyle: 'italic',
+          marginBottom: '3rem'
+        }}>
+          AI-powered biomedical data analysis platform
         </p>
-      </div>
-
-      <div className="card" style={{background: '#fafafa', border: '1px solid #e0e0e0', marginBottom: '2rem'}}>
-        <h2 style={{color: '#2c3e50', marginBottom: '1.5rem', fontWeight: '500'}}>Quick Start Guide</h2>
-        <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem'}}>
+        
+        {/* Usage Guide */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, 1fr)',
+          gap: '2rem',
+          maxWidth: '800px',
+          margin: '0 auto',
+          marginBottom: '2rem'
+        }}>
           <div style={{
-            background: 'white', 
-            padding: '1.5rem', 
-            borderRadius: '4px', 
-            border: '1px solid #e0e0e0',
-            display: 'flex',
-            flexDirection: 'column',
-            minHeight: '160px'
+            textAlign: 'center',
+            padding: '1.5rem',
+            border: '1px solid #d0d0d0',
+            backgroundColor: '#fafafa'
           }}>
-            <h3 style={{color: '#2c3e50', marginBottom: '0.8rem', fontWeight: '500', fontSize: '1.1rem'}}>Step 1: Explore Models</h3>
-            <p style={{color: '#666', marginBottom: 'auto', lineHeight: '1.5', fontSize: '0.95rem'}}>
-              Browse available AI models and read their documentation to understand their capabilities.
-            </p>
-            <a href="/models" style={{
-              color: '#007bff', 
-              textDecoration: 'none', 
-              fontWeight: '500',
-              marginTop: '1rem',
-              fontSize: '0.95rem'
-            }}>View Models</a>
+            <div style={{
+              fontSize: '1.5rem',
+              fontWeight: '600',
+              color: '#2c3e50',
+              marginBottom: '0.5rem'
+            }}>
+              Step 1
+            </div>
+            <div style={{
+              fontSize: '1rem',
+              fontWeight: '600',
+              marginBottom: '0.5rem'
+            }}>
+              Select Model
+            </div>
+            <div style={{
+              fontSize: '0.9rem',
+              color: '#666',
+              fontStyle: 'italic'
+            }}>
+              Choose appropriate algorithm for your data type
+            </div>
           </div>
+          
           <div style={{
-            background: 'white', 
-            padding: '1.5rem', 
-            borderRadius: '4px', 
-            border: '1px solid #e0e0e0',
-            display: 'flex',
-            flexDirection: 'column',
-            minHeight: '160px'
+            textAlign: 'center',
+            padding: '1.5rem',
+            border: '1px solid #d0d0d0',
+            backgroundColor: '#fafafa'
           }}>
-            <h3 style={{color: '#2c3e50', marginBottom: '0.8rem', fontWeight: '500', fontSize: '1.1rem'}}>Step 2: Upload Data</h3>
-            <p style={{color: '#666', marginBottom: 'auto', lineHeight: '1.5', fontSize: '0.95rem'}}>
-              Select a model and upload your data file for analysis.
-            </p>
-            <a href="/upload" style={{
-              color: '#007bff', 
-              textDecoration: 'none', 
-              fontWeight: '500',
-              marginTop: '1rem',
-              fontSize: '0.95rem'
-            }}>Upload Data</a>
+            <div style={{
+              fontSize: '1.5rem',
+              fontWeight: '600',
+              color: '#2c3e50',
+              marginBottom: '0.5rem'
+            }}>
+              Step 2
+            </div>
+            <div style={{
+              fontSize: '1rem',
+              fontWeight: '600',
+              marginBottom: '0.5rem'
+            }}>
+              Upload & Configure
+            </div>
+            <div style={{
+              fontSize: '0.9rem',
+              color: '#666',
+              fontStyle: 'italic'
+            }}>
+              Upload data files and set analysis parameters
+            </div>
           </div>
+          
           <div style={{
-            background: 'white', 
-            padding: '1.5rem', 
-            borderRadius: '4px', 
-            border: '1px solid #e0e0e0',
-            display: 'flex',
-            flexDirection: 'column',
-            minHeight: '160px'
+            textAlign: 'center',
+            padding: '1.5rem',
+            border: '1px solid #d0d0d0',
+            backgroundColor: '#fafafa'
           }}>
-            <h3 style={{color: '#2c3e50', marginBottom: '0.8rem', fontWeight: '500', fontSize: '1.1rem'}}>Step 3: View Results</h3>
-            <p style={{color: '#666', marginBottom: 'auto', lineHeight: '1.5', fontSize: '0.95rem'}}>
-              Download processed data, visualizations, and analysis reports.
-            </p>
-            <span style={{
-              color: '#888', 
-              fontStyle: 'italic',
-              marginTop: '1rem',
-              fontSize: '0.9rem'
-            }}>Results page available after upload</span>
-          </div>
-        </div>
-      </div>
-      
-      <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem'}}>
-        <div className="card">
-          <h2 style={{color: '#2c3e50', fontWeight: '500', marginBottom: '1.2rem'}}>Supported File Formats</h2>
-          <div style={{marginTop: '1rem'}}>
-            <div style={{padding: '1rem', background: '#fafafa', borderRadius: '4px', marginBottom: '0.8rem', borderLeft: '3px solid #28a745'}}>
-              <div style={{fontWeight: '500', color: '#28a745', marginBottom: '0.4rem', fontSize: '0.95rem'}}>.h5ad - AnnData format</div>
-              <div style={{fontSize: '0.9rem', color: '#666', lineHeight: '1.4'}}>Single-cell RNA sequencing data</div>
+            <div style={{
+              fontSize: '1.5rem',
+              fontWeight: '600',
+              color: '#2c3e50',
+              marginBottom: '0.5rem'
+            }}>
+              Step 3
             </div>
-            <div style={{padding: '1rem', background: '#fafafa', borderRadius: '4px', marginBottom: '0.8rem', borderLeft: '3px solid #17a2b8'}}>
-              <div style={{fontWeight: '500', color: '#17a2b8', marginBottom: '0.4rem', fontSize: '0.95rem'}}>.csv - CSV format</div>
-              <div style={{fontSize: '0.9rem', color: '#666', lineHeight: '1.4'}}>Tabular data (genes as rows, cells as columns)</div>
+            <div style={{
+              fontSize: '1rem',
+              fontWeight: '600',
+              marginBottom: '0.5rem'
+            }}>
+              Download Results
             </div>
-            <div style={{padding: '1rem', background: '#fafafa', borderRadius: '4px', borderLeft: '3px solid #6f42c1'}}>
-              <div style={{fontWeight: '500', color: '#6f42c1', marginBottom: '0.4rem', fontSize: '0.95rem'}}>.jpg, .png - Image formats</div>
-              <div style={{fontSize: '0.9rem', color: '#666', lineHeight: '1.4'}}>Medical images for classification analysis</div>
-            </div>
-          </div>
-        </div>
-
-        <div className="card">
-          <h2 style={{color: '#2c3e50', fontWeight: '500', marginBottom: '1.2rem'}}>Available Models</h2>
-          <div style={{marginTop: '1rem'}}>
-            <div style={{padding: '1rem', background: '#fafafa', borderRadius: '4px', marginBottom: '0.8rem', borderLeft: '3px solid #007bff'}}>
-              <div style={{fontWeight: '500', color: '#007bff', marginBottom: '0.5rem', fontSize: '0.95rem'}}>scVI Model</div>
-              <div style={{fontSize: '0.9rem', color: '#666', marginBottom: '0.6rem', lineHeight: '1.4'}}>
-                Advanced dimensionality reduction and batch effect correction for single-cell RNA sequencing data
-              </div>
-              <div style={{fontSize: '0.85rem', color: '#888', lineHeight: '1.3'}}>
-                | UMAP visualization | Latent representation | Processed datasets (.h5ad, .csv)
-              </div>
-            </div>
-            <div style={{padding: '1rem', background: '#fafafa', borderRadius: '4px', marginBottom: '0.8rem', borderLeft: '3px solid #6f42c1'}}>
-              <div style={{fontWeight: '500', color: '#6f42c1', marginBottom: '0.5rem', fontSize: '0.95rem'}}>Image Classifier</div>
-              <div style={{fontSize: '0.9rem', color: '#666', marginBottom: '0.6rem', lineHeight: '1.4'}}>
-                Object recognition and classification using ResNet deep learning architecture
-              </div>
-              <div style={{fontSize: '0.85rem', color: '#888', lineHeight: '1.3'}}>
-                | Top-K predictions | Confidence scores | Classification charts (.png, .csv, .json)
-              </div>
+            <div style={{
+              fontSize: '0.9rem',
+              color: '#666',
+              fontStyle: 'italic'
+            }}>
+              Retrieve processed data and visualization files
             </div>
           </div>
         </div>
 
-        <div className="card">
-          <h2 style={{color: '#2c3e50', fontWeight: '500', marginBottom: '1.2rem'}}>Important Notes</h2>
-          <div style={{marginTop: '1rem'}}>
-            <div style={{padding: '0.8rem', marginBottom: '0.7rem', background: '#fafafa', borderRadius: '4px', borderLeft: '3px solid #6c757d'}}>
-              <strong style={{color: '#2c3e50', fontSize: '0.9rem'}}>File Size:</strong> <span style={{color: '#666', fontSize: '0.9rem'}}>Maximum 500MB</span>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          gap: '1.5rem',
+          marginTop: '2rem'
+        }}>
+          <a href="/models" style={{
+            background: '#2c3e50',
+            color: 'white',
+            padding: '0.8rem 2rem',
+            textDecoration: 'none',
+            fontSize: '1rem',
+            fontWeight: '500',
+            border: '2px solid #2c3e50',
+            transition: 'all 0.2s ease'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = 'white';
+            e.currentTarget.style.color = '#2c3e50';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = '#2c3e50';
+            e.currentTarget.style.color = 'white';
+          }}
+          >
+            Explore Models
+          </a>
+          <a href="/upload" style={{
+            background: 'white',
+            color: '#2c3e50',
+            padding: '0.8rem 2rem',
+            textDecoration: 'none',
+            fontSize: '1rem',
+            fontWeight: '500',
+            border: '2px solid #2c3e50',
+            transition: 'all 0.2s ease'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#2c3e50';
+            e.currentTarget.style.color = 'white';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'white';
+            e.currentTarget.style.color = '#2c3e50';
+          }}
+          >
+            Start Analysis
+          </a>
+        </div>
+      </header>
+
+      {/* Available Models Section */}
+      <section style={{ marginBottom: '5rem' }}>
+        <h2 style={{
+          fontSize: '1.8rem',
+          fontWeight: '500',
+          color: '#2c3e50',
+          marginBottom: '2.5rem',
+          textAlign: 'center',
+          borderBottom: '2px solid #2c3e50',
+          paddingBottom: '1rem'
+        }}>
+          Available Models
+        </h2>
+        
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: '200px 1fr',
+          border: '2px solid #2c3e50'
+        }}>
+          {/* Table Header */}
+          <div style={{
+            backgroundColor: '#2c3e50',
+            color: 'white',
+            padding: '1rem',
+            fontWeight: '600',
+            borderRight: '1px solid #2c3e50'
+          }}>
+            Model
+          </div>
+          <div style={{
+            backgroundColor: '#2c3e50',
+            color: 'white',
+            padding: '1rem',
+            fontWeight: '600'
+          }}>
+            Specifications
+          </div>
+          
+          {/* scVI Model Row */}
+          <div style={{
+            padding: '1.5rem 1rem',
+            borderRight: '1px solid #d0d0d0',
+            borderBottom: '1px solid #d0d0d0',
+            fontWeight: '600',
+            backgroundColor: '#f9f9f9'
+          }}>
+            scVI Model
+          </div>
+          <div style={{
+            padding: '1.5rem 1rem',
+            borderBottom: '1px solid #d0d0d0',
+            lineHeight: '1.8'
+          }}>
+            <div style={{ marginBottom: '0.5rem' }}>
+              <strong>Purpose:</strong> Single-cell RNA-seq analysis with batch correction
             </div>
-            <div style={{padding: '0.8rem', marginBottom: '0.7rem', background: '#fafafa', borderRadius: '4px', borderLeft: '3px solid #6c757d'}}>
-              <strong style={{color: '#2c3e50', fontSize: '0.9rem'}}>Processing Time:</strong> <span style={{color: '#666', fontSize: '0.9rem'}}>2-10 minutes depending on data complexity</span>
+            <div style={{ marginBottom: '0.5rem' }}>
+              <strong>Input:</strong> .h5ad, .csv (genes x cells matrix)
             </div>
-            <div style={{padding: '0.8rem', marginBottom: '0.7rem', background: '#fafafa', borderRadius: '4px', borderLeft: '3px solid #6c757d'}}>
-              <strong style={{color: '#2c3e50', fontSize: '0.9rem'}}>Data Privacy:</strong> <span style={{color: '#666', fontSize: '0.9rem'}}>Files are processed securely and not stored permanently</span>
+            <div style={{ marginBottom: '0.5rem' }}>
+              <strong>Output:</strong> UMAP visualizations, latent representations
             </div>
-            <div style={{padding: '0.8rem', background: '#fafafa', borderRadius: '4px', borderLeft: '3px solid #6c757d'}}>
-              <strong style={{color: '#2c3e50', fontSize: '0.9rem'}}>Results:</strong> <span style={{color: '#666', fontSize: '0.9rem'}}>Download your results promptly as they may be cleaned up after 24 hours</span>
+            <div>
+              <strong>Applications:</strong> Cell clustering, dimensionality reduction
+            </div>
+          </div>
+          
+          {/* Image Classifier Row */}
+          <div style={{
+            padding: '1.5rem 1rem',
+            borderRight: '1px solid #d0d0d0',
+            fontWeight: '600',
+            backgroundColor: '#f9f9f9'
+          }}>
+            Image Classifier
+          </div>
+          <div style={{
+            padding: '1.5rem 1rem',
+            lineHeight: '1.8'
+          }}>
+            <div style={{ marginBottom: '0.5rem' }}>
+              <strong>Purpose:</strong> Deep learning-based object recognition
+            </div>
+            <div style={{ marginBottom: '0.5rem' }}>
+              <strong>Input:</strong> .jpg, .png (max 10MB)
+            </div>
+            <div style={{ marginBottom: '0.5rem' }}>
+              <strong>Output:</strong> Classification results, confidence scores
+            </div>
+            <div>
+              <strong>Applications:</strong> Object detection, medical imaging
             </div>
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* Data Requirements Section */}
+      <section style={{ marginBottom: '5rem' }}>
+        <h2 style={{
+          fontSize: '1.8rem',
+          fontWeight: '500',
+          color: '#2c3e50',
+          marginBottom: '2.5rem',
+          textAlign: 'center',
+          borderBottom: '2px solid #2c3e50',
+          paddingBottom: '1rem'
+        }}>
+          Data Requirements
+        </h2>
+        
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: '2rem'
+        }}>
+          {/* Single-cell RNA-seq Block */}
+          <div style={{
+            border: '2px solid #2c3e50',
+            padding: '0'
+          }}>
+            <div style={{
+              backgroundColor: '#2c3e50',
+              color: 'white',
+              padding: '1rem',
+              fontWeight: '600',
+              fontSize: '1.1rem'
+            }}>
+              Single-cell RNA-seq Data
+            </div>
+            <div style={{
+              padding: '1.5rem',
+              backgroundColor: 'white',
+              lineHeight: '1.8'
+            }}>
+              <div style={{ marginBottom: '0.8rem' }}>
+                <strong>Format:</strong> .h5ad (AnnData) or .csv
+              </div>
+              <div style={{ marginBottom: '0.8rem' }}>
+                <strong>Structure:</strong> Genes as rows, cells as columns
+              </div>
+              <div style={{ marginBottom: '0.8rem' }}>
+                <strong>Minimum size:</strong> 100+ cells, 500+ genes
+              </div>
+              <div>
+                <strong>Size limit:</strong> 500MB maximum
+              </div>
+            </div>
+          </div>
+          
+          {/* Image Data Block */}
+          <div style={{
+            border: '2px solid #2c3e50',
+            padding: '0'
+          }}>
+            <div style={{
+              backgroundColor: '#2c3e50',
+              color: 'white',
+              padding: '1rem',
+              fontWeight: '600',
+              fontSize: '1.1rem'
+            }}>
+              Image Data
+            </div>
+            <div style={{
+              padding: '1.5rem',
+              backgroundColor: 'white',
+              lineHeight: '1.8'
+            }}>
+              <div style={{ marginBottom: '0.8rem' }}>
+                <strong>Format:</strong> .jpg, .jpeg, .png
+              </div>
+              <div style={{ marginBottom: '0.8rem' }}>
+                <strong>Quality:</strong> Clear, well-lit images
+              </div>
+              <div style={{ marginBottom: '0.8rem' }}>
+                <strong>Resolution:</strong> Any size (auto-resized)
+              </div>
+              <div>
+                <strong>Size limit:</strong> 10MB per image
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* System Information Section */}
+      <section style={{ marginBottom: '5rem' }}>
+        <h2 style={{
+          fontSize: '1.8rem',
+          fontWeight: '500',
+          color: '#2c3e50',
+          marginBottom: '2.5rem',
+          textAlign: 'center',
+          borderBottom: '2px solid #2c3e50',
+          paddingBottom: '1rem'
+        }}>
+          System Information
+        </h2>
+        
+        <div style={{
+          border: '2px solid #2c3e50'
+        }}>
+          <div style={{
+            backgroundColor: '#2c3e50',
+            color: 'white',
+            padding: '1rem',
+            fontWeight: '600',
+            fontSize: '1.1rem'
+          }}>
+            Processing & Output Details
+          </div>
+          <div style={{
+            padding: '2rem',
+            backgroundColor: 'white',
+            lineHeight: '1.8'
+          }}>
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: '1fr 1fr', 
+              gap: '2rem' 
+            }}>
+              <div>
+                <h4 style={{ 
+                  fontWeight: '600', 
+                  marginBottom: '1rem', 
+                  color: '#2c3e50' 
+                }}>
+                  Processing Information
+                </h4>
+                <div style={{ marginBottom: '0.8rem' }}>
+                  <strong>Processing time:</strong> 2-10 minutes (data size dependent)
+                </div>
+                <div style={{ marginBottom: '0.8rem' }}>
+                  <strong>Data privacy:</strong> Secure processing, no permanent storage
+                </div>
+                <div>
+                  <strong>Results retention:</strong> 24 hours (download promptly)
+                </div>
+              </div>
+              
+              <div>
+                <h4 style={{ 
+                  fontWeight: '600', 
+                  marginBottom: '1rem', 
+                  color: '#2c3e50' 
+                }}>
+                  Output Interpretation
+                </h4>
+                <div style={{ marginBottom: '0.8rem' }}>
+                  <strong>scVI:</strong> UMAP plots, latent representations
+                </div>
+                <div>
+                  <strong>Classifier:</strong> Prediction charts, confidence scores
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

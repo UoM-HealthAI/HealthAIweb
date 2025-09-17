@@ -36,6 +36,7 @@ function Models() {
   const [selectedModel, setSelectedModel] = useState<string | null>(null);
   const [modelDocs, setModelDocs] = useState<{[key: string]: ModelDocumentation}>({});
   const [copiedState, setCopiedState] = useState<{[key: string]: boolean}>({});
+  const [expandedContents, setExpandedContents] = useState<{[key: string]: boolean}>({});
 
   const copyToClipboard = async (text: string, key: string) => {
     try {
@@ -407,18 +408,18 @@ plt.show()`,
   // Screen to show while loading
   if (loading) {
     return (
-      <div style={{ display: 'flex', height: '100vh' }}>
+      <div className="models-page-container" style={{ display: 'flex', height: '100vh', maxWidth: '1600px', margin: '0 auto' }}>
         {/* Left Sidebar */}
         <div style={{
-          width: '180px',
+          width: '280px',
           backgroundColor: '#f8f9fa',
-          padding: '15px 5px',
+          padding: '20px 15px',
           borderRight: '1px solid #dee2e6',
           flexShrink: 0,
-          marginRight: '10px'
+          marginRight: '30px'
         }}>
           <div style={{ marginBottom: '30px' }}>
-            <span style={{ color: '#ff6b35', fontSize: '24px', fontWeight: 'bold' }}>🧬</span>
+            <span style={{ color: '#2c3e50', fontSize: '24px', fontWeight: 'bold' }}>🧬</span>
             <span style={{ marginLeft: '10px', fontSize: '18px', fontWeight: 'bold' }}>HealthAI</span>
           </div>
           
@@ -437,7 +438,7 @@ plt.show()`,
         </div>
 
         {/* Main Content */}
-        <div style={{ flex: 1, padding: '40px 15px' }}>
+        <div style={{ flex: 1, padding: '40px 60px' }}>
           <h1 style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '10px', color: '#2c3e50' }}>
             Available Models
           </h1>
@@ -452,18 +453,18 @@ plt.show()`,
   // Screen to show if there's an error
   if (error) {
     return (
-      <div style={{ display: 'flex', height: '100vh' }}>
+      <div className="models-page-container" style={{ display: 'flex', height: '100vh', maxWidth: '1600px', margin: '0 auto' }}>
         {/* Left Sidebar */}
         <div style={{
-          width: '180px',
+          width: '280px',
           backgroundColor: '#f8f9fa',
-          padding: '15px 5px',
+          padding: '20px 15px',
           borderRight: '1px solid #dee2e6',
           flexShrink: 0,
-          marginRight: '10px'
+          marginRight: '30px'
         }}>
           <div style={{ marginBottom: '30px' }}>
-            <span style={{ color: '#ff6b35', fontSize: '24px', fontWeight: 'bold' }}>🧬</span>
+            <span style={{ color: '#2c3e50', fontSize: '24px', fontWeight: 'bold' }}>🧬</span>
             <span style={{ marginLeft: '10px', fontSize: '18px', fontWeight: 'bold' }}>HealthAI</span>
           </div>
           
@@ -482,7 +483,7 @@ plt.show()`,
         </div>
 
         {/* Main Content */}
-        <div style={{ flex: 1, padding: '40px 15px' }}>
+        <div style={{ flex: 1, padding: '40px 60px' }}>
           <h1 style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '10px', color: '#2c3e50' }}>
             Available Models
           </h1>
@@ -500,16 +501,16 @@ plt.show()`,
 
   // Main render - what the user sees
   return (
-    <div style={{ display: 'flex', height: '100vh', fontFamily: 'Arial, sans-serif', width: '100%', maxWidth: '100vw' }}>
+    <div className="models-page-container" style={{ display: 'flex', height: '100vh', fontFamily: 'Arial, sans-serif', maxWidth: '1600px', margin: '0 auto' }}>
        {/* Left Sidebar */}
        <div style={{
-         width: '180px',
+         width: '280px',
          backgroundColor: '#f8f9fa',
-         padding: '15px 5px',
+         padding: '20px 15px',
          borderRight: '1px solid #dee2e6',
          overflowY: 'auto',
          flexShrink: 0,
-         marginRight: '10px'
+         marginRight: '30px'
        }}>
         {/* Logo */}
         <div style={{ marginBottom: '30px' }}>
@@ -557,6 +558,10 @@ plt.show()`,
                 onClick={() => {
                   setSelectedModel(model.id);
                   loadModelDocumentation(model.id);
+                  setExpandedContents(prev => ({
+                    ...prev,
+                    [model.id]: selectedModel === model.id ? !prev[model.id] : true
+                  }));
                 }}
                 style={{
                   padding: '8px 15px',
@@ -566,7 +571,10 @@ plt.show()`,
                   border: selectedModel === model.id ? '1px solid #ced4da' : '1px solid transparent',
                   transition: 'all 0.2s ease',
                   fontSize: '14px',
-                  fontWeight: '500'
+                  fontWeight: '500',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
                 }}
                 onMouseEnter={(e) => {
                   if (selectedModel !== model.id) {
@@ -579,17 +587,119 @@ plt.show()`,
                   }
                 }}
               >
-                {model.name}
+                <span>{model.name}</span>
+                {selectedModel === model.id && (
+                  <span style={{ fontSize: '10px', color: '#6c757d' }}>
+                    {expandedContents[model.id] ? '▼' : '▶'}
+                  </span>
+                )}
               </div>
+              
+              {/* Contents Menu - Show when model is selected and contents are expanded */}
+              {selectedModel === model.id && expandedContents[model.id] && (
+                <div style={{ marginLeft: '20px', marginTop: '8px', borderLeft: '2px solid #e9ecef', paddingLeft: '12px' }}>
+                  <div style={{ marginBottom: '6px', fontSize: '12px', fontWeight: '600', color: '#495057' }}>
+                    Contents
+                  </div>
+                  <div style={{ marginBottom: '4px' }}>
+                    <a href="#overview" style={{ 
+                      color: '#6c757d', 
+                      textDecoration: 'none', 
+                      fontSize: '12px',
+                      display: 'block',
+                      padding: '2px 0',
+                      transition: 'color 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = '#2c3e50'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = '#6c757d'}
+                    >
+                      Overview
+                    </a>
+                  </div>
+                  <div style={{ marginBottom: '4px' }}>
+                    <a href="#preprocessing" style={{ 
+                      color: '#6c757d', 
+                      textDecoration: 'none', 
+                      fontSize: '12px',
+                      display: 'block',
+                      padding: '2px 0',
+                      transition: 'color 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = '#2c3e50'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = '#6c757d'}
+                    >
+                      Preprocessing
+                    </a>
+                  </div>
+                  <div style={{ marginBottom: '4px' }}>
+                    <a href="#mathematical-formulation" style={{ 
+                      color: '#6c757d', 
+                      textDecoration: 'none', 
+                      fontSize: '12px',
+                      display: 'block',
+                      padding: '2px 0',
+                      transition: 'color 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = '#2c3e50'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = '#6c757d'}
+                    >
+                      Mathematical Formulation
+                    </a>
+                  </div>
+                  <div style={{ marginBottom: '4px' }}>
+                    <a href="#code-example" style={{ 
+                      color: '#6c757d', 
+                      textDecoration: 'none', 
+                      fontSize: '12px',
+                      display: 'block',
+                      padding: '2px 0',
+                      transition: 'color 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = '#2c3e50'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = '#6c757d'}
+                    >
+                      Code Example
+                    </a>
+                  </div>
+                  <div style={{ marginBottom: '4px' }}>
+                    <a href="#visualization" style={{ 
+                      color: '#6c757d', 
+                      textDecoration: 'none', 
+                      fontSize: '12px',
+                      display: 'block',
+                      padding: '2px 0',
+                      transition: 'color 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = '#2c3e50'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = '#6c757d'}
+                    >
+                      Visualization
+                    </a>
+                  </div>
+                  <div style={{ marginBottom: '4px' }}>
+                    <a href="#references" style={{ 
+                      color: '#6c757d', 
+                      textDecoration: 'none', 
+                      fontSize: '12px',
+                      display: 'block',
+                      padding: '2px 0',
+                      transition: 'color 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = '#2c3e50'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = '#6c757d'}
+                    >
+                      References
+                    </a>
+                  </div>
+                </div>
+              )}
             </div>
           ))}
         </nav>
       </div>
 
        {/* Main Content Area */}
-       <div style={{ flex: 1, display: 'flex' }}>
-         {/* Central Content */}
-         <div style={{ flex: 1, padding: '40px 15px', overflowY: 'auto', minWidth: 0, maxWidth: 'none' }}>
+       <div style={{ flex: 1, padding: '40px 60px', overflowY: 'auto', minWidth: 0, maxWidth: 'none' }}>
           <h1 style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '10px', color: '#2c3e50' }}>
             Available Models
           </h1>
@@ -603,9 +713,11 @@ plt.show()`,
                  backgroundColor: '#ffffff',
                  border: '1px solid #e0e0e0',
                  borderRadius: '8px',
-                 padding: '15px',
+                 padding: '50px',
                  marginBottom: '30px',
-                 boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                 boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                 maxWidth: 'none',
+                 width: '100%'
                }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '30px' }}>
                   <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#2c3e50', margin: 0 }}>
@@ -613,9 +725,9 @@ plt.show()`,
                   </h2>
                   <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                     {/* Use Model Button */}
-                    <button
+                  <button
                       onClick={() => window.location.href = `/upload?model=${selectedModel}`}
-                      style={{
+                    style={{
                         backgroundColor: '#2c3e50',
                       color: 'white',
                       border: 'none',
@@ -729,7 +841,7 @@ plt.show()`,
                           }}
                         >
                           PDF (Print)
-                        </button>
+                  </button>
                       </div>
                     </div>
                   </div>
@@ -743,7 +855,7 @@ plt.show()`,
                      
                      <div style={{ marginBottom: '25px' }}>
                        <h4 style={{ color: '#2c3e50', fontSize: '18px', marginBottom: '10px' }}>Description</h4>
-                       <p style={{ lineHeight: '1.8', color: '#555', fontSize: '16px', maxWidth: '100%' }}>
+                       <p style={{ lineHeight: '2.0', color: '#555', fontSize: '16px', maxWidth: 'none' }}>
                          {modelDocs[selectedModel].simple_explanation}
                        </p>
                      </div>
@@ -886,7 +998,7 @@ plt.show()`,
                    {/* Preprocessing Section */}
                    <div id="preprocessing" style={{ marginBottom: '40px' }}>
                      <h3 style={{ color: '#2c3e50', fontSize: '22px', marginBottom: '20px', borderBottom: '2px solid #2c3e50', paddingBottom: '8px' }}>Preprocessing</h3>
-                     <p style={{ marginBottom: '20px', color: '#555', fontSize: '16px', lineHeight: '1.8', maxWidth: '100%' }}>
+                     <p style={{ marginBottom: '20px', color: '#555', fontSize: '16px', lineHeight: '1.8', maxWidth: 'none' }}>
                        Proper preprocessing is crucial for scVI performance. Follow these steps to prepare your data:
                      </p>
                      <div style={{ position: 'relative' }}>
@@ -947,7 +1059,7 @@ plt.show()`,
                    {/* Code Example Section */}
                    <div id="code-example" style={{ marginBottom: '40px' }}>
                      <h3 style={{ color: '#2c3e50', fontSize: '22px', marginBottom: '20px', borderBottom: '2px solid #2c3e50', paddingBottom: '8px' }}>Code Example</h3>
-                     <p style={{ marginBottom: '20px', color: '#555', fontSize: '16px', lineHeight: '1.8', maxWidth: '100%' }}>
+                     <p style={{ marginBottom: '20px', color: '#555', fontSize: '16px', lineHeight: '1.8', maxWidth: 'none' }}>
                        Complete workflow for training and using scVI on your single-cell data:
                      </p>
                      <div style={{ position: 'relative' }}>
@@ -990,7 +1102,7 @@ plt.show()`,
                    {/* Visualization Section */}
                    <div id="visualization" style={{ marginBottom: '40px' }}>
                      <h3 style={{ color: '#2c3e50', fontSize: '22px', marginBottom: '20px', borderBottom: '2px solid #2c3e50', paddingBottom: '8px' }}>Visualization</h3>
-                     <p style={{ marginBottom: '20px', color: '#555', fontSize: '16px', lineHeight: '1.8', maxWidth: '100%' }}>
+                     <p style={{ marginBottom: '20px', color: '#555', fontSize: '16px', lineHeight: '1.8', maxWidth: 'none' }}>
                        Visualize and analyze your scVI results:
                      </p>
                      
@@ -1217,62 +1329,6 @@ plt.show()`,
             </div>
            )}
          </div>
-
-         {/* Right Sidebar - Table of Contents */}
-         <div style={{
-           width: '200px',
-           backgroundColor: '#f8f9fa',
-           padding: '15px 8px',
-           borderLeft: '1px solid #dee2e6',
-           overflowY: 'auto',
-           flexShrink: 0,
-           marginLeft: '10px'
-         }}>
-           {selectedModel ? (
-             <>
-               <h3 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '15px', color: '#2c3e50' }}>
-                 Contents
-               </h3>
-               <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                 <li style={{ marginBottom: '8px' }}>
-                   <a href="#overview" style={{ color: '#2c3e50', textDecoration: 'none', fontSize: '14px' }}>
-                     Overview
-                   </a>
-                 </li>
-                 <li style={{ marginBottom: '8px' }}>
-                   <a href="#preprocessing" style={{ color: '#2c3e50', textDecoration: 'none', fontSize: '14px' }}>
-                     Preprocessing
-                   </a>
-                 </li>
-                 <li style={{ marginBottom: '8px' }}>
-                   <a href="#mathematical-formulation" style={{ color: '#2c3e50', textDecoration: 'none', fontSize: '14px' }}>
-                     Mathematical Formulation
-                   </a>
-                 </li>
-                 <li style={{ marginBottom: '8px' }}>
-                   <a href="#code-example" style={{ color: '#2c3e50', textDecoration: 'none', fontSize: '14px' }}>
-                     Code Example
-                   </a>
-                 </li>
-                 <li style={{ marginBottom: '8px' }}>
-                   <a href="#visualization" style={{ color: '#2c3e50', textDecoration: 'none', fontSize: '14px' }}>
-                     Visualization
-                   </a>
-                 </li>
-                 <li style={{ marginBottom: '8px' }}>
-                   <a href="#references" style={{ color: '#2c3e50', textDecoration: 'none', fontSize: '14px' }}>
-                     References
-                   </a>
-                 </li>
-               </ul>
-             </>
-           ) : (
-             <div style={{ color: '#6c757d', fontSize: '14px', textAlign: 'center', marginTop: '50px' }}>
-               Select a model to view contents
-             </div>
-           )}
-         </div>
-       </div>
      </div>
   );
 }

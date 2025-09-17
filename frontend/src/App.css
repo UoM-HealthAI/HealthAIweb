@@ -159,3 +159,12 @@ body {
   border-radius: 4px;
   margin: 1rem 0;
 }
+
+/* Models page specific - full width layout */
+.models-page-container {
+  max-width: none !important;
+  width: 100% !important;
+  min-width: 1200px;
+  padding: 0 !important;
+  margin: 0 !important;
+}
