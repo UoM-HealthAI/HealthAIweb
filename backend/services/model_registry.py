@@ -54,9 +54,15 @@ def scan_models() -> List[Dict[str, Any]]:
                 "image_classifier": "Object recognition & image analysis"
             }
             
+            # Custom name mapping for better display names
+            model_names = {
+                "scvi_model": "scVI Model",
+                "image_classifier": "Image Classifier"
+            }
+            
             model_info = {
                 "id": item,
-                "name": item.replace("_", " ").title(),
+                "name": model_names.get(item, item.replace("_", " ").title()),
                 "description": model_descriptions.get(item, "AI model for data analysis"),
                 "status": "found"
             }
