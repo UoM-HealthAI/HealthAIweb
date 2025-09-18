@@ -7,6 +7,8 @@ services:
       cd frontend && npm install && CI=false npm run build &&
       cd ../backend && pip install -r requirements.txt &&
       cp -r ../model_registry ./model_registry &&
+      echo "=== Debug: Checking model_registry ===" &&
+      ls -la ./model_registry/ &&
       mkdir -p frontend &&
       cp -r ../frontend/build frontend/ &&
       echo "=== Debug: Checking frontend/build ===" &&
