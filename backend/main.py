@@ -35,9 +35,10 @@ init_directories()
 app.mount("/outputs", StaticFiles(directory="outputs"), name="outputs")
 
 # Mount React frontend (for production deployment)
-frontend_build_path = Path("../frontend/build")
+# In Render, frontend build is copied to backend directory during build
+frontend_build_path = Path("frontend/build")
 if frontend_build_path.exists():
-    app.mount("/static", StaticFiles(directory="../frontend/build/static"), name="static")
+    app.mount("/static", StaticFiles(directory="frontend/build/static"), name="static")
     
 
 else:
@@ -125,9 +126,9 @@ def _read_file_text(file_path: str, max_chars: int = 4000) -> str:
 @app.get("/")
 async def root():
     """Serve React app for root path"""
-    frontend_build_path = Path("../frontend/build")
+    frontend_build_path = Path("frontend/build")
     if frontend_build_path.exists():
-        return FileResponse("../frontend/build/index.html")
+        return FileResponse("frontend/build/index.html")
     else:
         # Development mode fallback
         return {
@@ -453,7 +454,7 @@ async def list_all_tasks():
     }
 
 # Serve React app for frontend routes (must be last!)
-frontend_build_path = Path("../frontend/build")
+frontend_build_path = Path("frontend/build")
 if frontend_build_path.exists():
     @app.get("/{full_path:path}")
     async def serve_react_app(full_path: str):
@@ -463,7 +464,7 @@ if frontend_build_path.exists():
             raise HTTPException(status_code=404, detail=f"Endpoint not found: {full_path}")
         
         # Serve index.html for frontend routes
-        return FileResponse("../frontend/build/index.html")
+        return FileResponse("frontend/build/index.html")
 
 if __name__ == "__main__":
     import uvicorn
