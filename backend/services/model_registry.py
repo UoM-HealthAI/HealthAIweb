@@ -29,15 +29,27 @@ def scan_models() -> List[Dict[str, Any]]:
         if os.path.exists(path):
             # Validate that this directory contains our models
             expected_models = {"scvi_model", "image_classifier"}
-            found_models = {d for d in os.listdir(path) 
-                          if os.path.isdir(os.path.join(path, d)) and d in expected_models}
+            found_models = set()
             
-            if found_models:  # Only use this path if we found actual models
-                print(f"Found models {found_models} in {path}")
+            for model_name in expected_models:
+                model_path = os.path.join(path, model_name)
+                if os.path.isdir(model_path):
+                    # Check for required files
+                    config_file = os.path.join(model_path, "config.yaml")
+                    model_file = os.path.join(model_path, "model.py")
+                    
+                    if os.path.exists(config_file) and os.path.exists(model_file):
+                        found_models.add(model_name)
+                        print(f"Validated model {model_name} in {path}")
+                    else:
+                        print(f"Model {model_name} directory exists but missing required files in {path}")
+            
+            if found_models:  # Only use this path if we found actual models with required files
+                print(f"Found valid models {found_models} in {path}")
                 models_dir = path
                 break
             else:
-                print(f"No valid models found in {path}")
+                print(f"No valid models with required files found in {path}")
     
     print(f"Looking for models in: {models_dir}")
     
