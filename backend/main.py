@@ -35,14 +35,25 @@ init_directories()
 app.mount("/outputs", StaticFiles(directory="outputs"), name="outputs")
 
 # Mount React frontend (for production deployment)
-# In Render, frontend build is copied to backend directory during build
-frontend_build_path = Path("frontend/build")
-if frontend_build_path.exists():
-    app.mount("/static", StaticFiles(directory="frontend/build/static"), name="static")
-    
+# Try multiple possible frontend build locations
+possible_frontend_paths = [
+    Path("frontend/build"),  # Render build location
+    Path("../frontend/build"),  # Development location
+    Path("./build"),  # Alternative location
+]
 
+frontend_build_path = None
+for path in possible_frontend_paths:
+    if path.exists() and (path / "index.html").exists():
+        frontend_build_path = path
+        print(f"Found frontend build at: {path}")
+        break
+
+if frontend_build_path:
+    app.mount("/static", StaticFiles(directory=str(frontend_build_path / "static")), name="static")
 else:
-    print("Frontend build directory not found. Running in development mode.")
+    print("Frontend build directory not found in any location. Running in development mode.")
+    print("Checked paths:", [str(p) for p in possible_frontend_paths])
 
 # CORS settings (for frontend connection)
 # Get allowed origins from environment variable for deployment
@@ -126,16 +137,23 @@ def _read_file_text(file_path: str, max_chars: int = 4000) -> str:
 @app.get("/")
 async def root():
     """Serve React app for root path"""
-    frontend_build_path = Path("frontend/build")
-    if frontend_build_path.exists():
-        return FileResponse("frontend/build/index.html")
-    else:
-        # Development mode fallback
-        return {
-            "message": "HealthAI Web Platform API", 
-            "status": "running",
-            "version": "0.1.0"
-        }
+    # Try multiple possible frontend build locations
+    possible_paths = [
+        Path("frontend/build/index.html"),
+        Path("../frontend/build/index.html"),
+        Path("./build/index.html"),
+    ]
+    
+    for path in possible_paths:
+        if path.exists():
+            return FileResponse(str(path))
+    
+    # Development mode fallback
+    return {
+        "message": "HealthAI Web Platform API", 
+        "status": "running",
+        "version": "0.1.1"
+    }
 
 @app.get("/health")
 async def health_check():
@@ -454,8 +472,16 @@ async def list_all_tasks():
     }
 
 # Serve React app for frontend routes (must be last!)
-frontend_build_path = Path("frontend/build")
-if frontend_build_path.exists():
+# Check if any frontend build exists
+frontend_exists = any(
+    path.exists() for path in [
+        Path("frontend/build/index.html"),
+        Path("../frontend/build/index.html"),
+        Path("./build/index.html"),
+    ]
+)
+
+if frontend_exists:
     @app.get("/{full_path:path}")
     async def serve_react_app(full_path: str):
         """Serve React app for frontend routes - this catches all unmatched routes"""
@@ -463,8 +489,19 @@ if frontend_build_path.exists():
         if full_path.startswith(("api", "docs", "redoc", "openapi.json", "health")):
             raise HTTPException(status_code=404, detail=f"Endpoint not found: {full_path}")
         
-        # Serve index.html for frontend routes
-        return FileResponse("frontend/build/index.html")
+        # Try multiple possible frontend build locations
+        possible_paths = [
+            Path("frontend/build/index.html"),
+            Path("../frontend/build/index.html"),
+            Path("./build/index.html"),
+        ]
+        
+        for path in possible_paths:
+            if path.exists():
+                return FileResponse(str(path))
+        
+        # If no frontend found, return 404
+        raise HTTPException(status_code=404, detail="Frontend not found")
 
 if __name__ == "__main__":
     import uvicorn
