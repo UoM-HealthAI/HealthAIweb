@@ -41,11 +41,14 @@ def scan_models() -> List[Dict[str, Any]]:
     # Step 3: Find all folders inside model_registry
     models = []
     
+    # Define allowed models explicitly
+    allowed_models = ["scvi_model", "image_classifier"]
+    
     for item in os.listdir(models_dir):
         item_path = os.path.join(models_dir, item)
         
-        # Only process directories (skip files)
-        if os.path.isdir(item_path):
+        # Only process allowed model directories
+        if os.path.isdir(item_path) and item in allowed_models:
             print(f"Found model folder: {item}")
             
             # Add basic info with descriptions
