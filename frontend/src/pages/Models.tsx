@@ -232,8 +232,8 @@ Generated from HealthAI Web Platform
           [modelId]: data.documentation
         }));
       } else {
-         // Use fallback documentation if API doesn't exist yet
-         const fallbackDocs: ModelDocumentation = {
+         // Use fallback documentation based on model ID
+         const fallbackDocs: ModelDocumentation = modelId === 'scvi_model' ? {
            simple_explanation: "scVI (single-cell Variational Inference) is a deep generative model for single-cell RNA sequencing data analysis. It uses variational autoencoders to learn a low-dimensional latent representation of cells while accounting for technical noise and batch effects.",
            when_to_use: [
              "Dimensionality reduction and visualization",
@@ -264,7 +264,61 @@ Generated from HealthAI Web Platform
 
 **Latent variables:**
 - z ~ N(0, I) (latent representation)
-- l ~ LogNormal(l_m, l_v) (library size)
+- l ~ LogNormal(l_m, l_v) (library size)`,
+         } : {
+           simple_explanation: "Our Image Classifier is a state-of-the-art deep learning model based on ResNet-18 architecture, designed for accurate and efficient image classification. It excels at recognizing objects, scenes, and patterns in images with high precision.",
+           when_to_use: [
+             "Object recognition in medical images",
+             "Disease detection from radiographs",
+             "Cell type classification from microscopy",
+             "Tissue sample analysis",
+             "Quality control in medical imaging",
+             "Automated image screening"
+           ],
+           features: modelId === 'scvi_model' ? [
+             "Handles zero-inflation in scRNA-seq data",
+             "Batch effect correction",
+             "Uncertainty quantification",
+             "Scalable to large datasets (>1M cells)",
+             "Integrates multiple datasets seamlessly",
+             "GPU acceleration support"
+           ] : [
+             "ResNet-18 architecture for robust feature extraction",
+             "Transfer learning from ImageNet pre-training",
+             "Real-time inference capabilities",
+             "High accuracy on medical imaging tasks",
+             "Confidence score for predictions",
+             "Multi-class classification support"
+           ],
+           technical_details: modelId === 'scvi_model' ? [
+             "Based on variational autoencoders (VAE)",
+             "Uses negative binomial distribution for gene expression",
+             "Incorporates batch information as covariates",
+             "Amortized inference for scalability",
+             "Deep neural networks for encoder/decoder",
+             "Stochastic optimization with mini-batches"
+           ] : [
+             "Deep residual learning architecture",
+             "Batch normalization layers",
+             "ReLU activation functions",
+             "Global average pooling",
+             "Softmax output layer",
+             "Cross-entropy loss optimization"
+           ],
+           citation: modelId === 'scvi_model' ? 
+             "Lopez, R., Regier, J., Cole, M. B., Jordan, M. I., & Yosef, N. (2018). Deep generative modeling for single-cell transcriptomics. Nature methods, 15(12), 1053-1058." :
+             "He, K., Zhang, X., Ren, S., & Sun, J. (2016). Deep residual learning for image recognition. In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 770-778).",
+           mathematical_formulation: modelId === 'scvi_model' ? 
+             `The scVI model assumes the following generative process:
+
+**Latent variables:**
+- z ~ N(0, I) (latent representation)
+- l ~ LogNormal(l_m, l_v) (library size)` :
+             `The ResNet architecture introduces residual learning:
+
+**Forward propagation:**
+y = F(x, {Wi}) + x
+where F(x, {Wi}) represents residual mapping to be learned
 
 **Observed variables:**
 - x | z, l ~ NB(μ, θ) (gene expression counts)
