@@ -16,19 +16,28 @@ def scan_models() -> List[Dict[str, Any]]:
     print("Starting model scan...")
     
     # Step 1: Find the model_registry folder
-    # Try multiple possible locations
+    # Try multiple possible locations and validate content
     possible_paths = [
-        "/app/model_registry",  # Docker container
         "./model_registry",     # Current directory (Render)
         "../model_registry",    # Parent directory
+        "/app/model_registry",  # Docker container
         "/opt/render/project/src/model_registry"  # Render specific
     ]
     
     models_dir = None
     for path in possible_paths:
         if os.path.exists(path):
-            models_dir = path
-            break
+            # Validate that this directory contains our models
+            expected_models = {"scvi_model", "image_classifier"}
+            found_models = {d for d in os.listdir(path) 
+                          if os.path.isdir(os.path.join(path, d)) and d in expected_models}
+            
+            if found_models:  # Only use this path if we found actual models
+                print(f"Found models {found_models} in {path}")
+                models_dir = path
+                break
+            else:
+                print(f"No valid models found in {path}")
     
     print(f"Looking for models in: {models_dir}")
     
