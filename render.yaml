@@ -4,9 +4,14 @@ services:
     env: python
     plan: free
     buildCommand: |
-      cd frontend && npm install && npm run build &&
+      cd frontend && npm install && CI=false npm run build &&
       cd ../backend && pip install -r requirements.txt &&
-      cp -r ../model_registry ./model_registry
+      cp -r ../model_registry ./model_registry &&
+      mkdir -p frontend &&
+      cp -r ../frontend/build frontend/ &&
+      echo "=== Debug: Checking frontend/build ===" &&
+      ls -la frontend/ &&
+      ls -la frontend/build/ || echo "frontend/build not found"
     startCommand: cd backend && python -m uvicorn main:app --host 0.0.0.0 --port $PORT --timeout-keep-alive 30
     envVars:
       - key: PYTHONPATH

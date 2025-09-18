@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { getAllModelConfigs } from '../config/modelConfig';
 
 // Type definition for model information (TypeScript)
 interface Model {
