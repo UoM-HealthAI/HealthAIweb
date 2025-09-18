@@ -48,10 +48,16 @@ def scan_models() -> List[Dict[str, Any]]:
         if os.path.isdir(item_path):
             print(f"Found model folder: {item}")
             
-            # For now, just add basic info
+            # Add basic info with descriptions
+            model_descriptions = {
+                "scvi_model": "Dimensionality reduction & batch correction",
+                "image_classifier": "Object recognition & image analysis"
+            }
+            
             model_info = {
                 "id": item,
                 "name": item.replace("_", " ").title(),
+                "description": model_descriptions.get(item, "AI model for data analysis"),
                 "status": "found"
             }
             

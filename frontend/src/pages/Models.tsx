@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 interface Model {
   id: string;
   name: string;
+  description?: string;
   status: string;
 }
 
@@ -586,7 +587,14 @@ plt.show()`,
                   }
                 }}
               >
-                <span>{model.name}</span>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                  <span>{model.name}</span>
+                  {model.description && (
+                    <span style={{ fontSize: '12px', color: '#6c757d', marginTop: '2px' }}>
+                      {model.description}
+                    </span>
+                  )}
+                </div>
                 {selectedModel === model.id && (
                   <span style={{ fontSize: '10px', color: '#6c757d' }}>
                     {expandedContents[model.id] ? '▼' : '▶'}
