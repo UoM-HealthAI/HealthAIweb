@@ -6,7 +6,8 @@ services:
     buildCommand: |
       cd frontend && npm install && npm run build &&
       cd ../backend && pip install -r requirements.txt &&
-      cp -r ../model_registry ./model_registry
+      cp -r ../model_registry ./model_registry &&
+      cp -r ../frontend/build ./frontend
     startCommand: cd backend && python -m uvicorn main:app --host 0.0.0.0 --port $PORT --timeout-keep-alive 30
     envVars:
       - key: PYTHONPATH
