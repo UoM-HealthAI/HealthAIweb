@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getAllModelConfigs } from '../config/modelConfig';
 
 // Type definition for model information (TypeScript)
 interface Model {
@@ -204,19 +205,40 @@ Generated from HealthAI Web Platform
 
   const fetchModels = async () => {
     try {
+      // First try to get models from API
       const response = await fetch('/api/models');
       
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (response.ok) {
+        const data = await response.json();
+        setModels(data.models);
+      } else {
+        // Fallback to model configs if API is not available
+        const modelConfigs = getAllModelConfigs();
+        const modelsFromConfig = Object.values(modelConfigs).map(config => ({
+          id: config.id,
+          name: config.name,
+          status: 'available'
+        }));
+        setModels(modelsFromConfig);
       }
-      
-      const data = await response.json();
-      setModels(data.models);
       setLoading(false);
     } catch (err) {
       console.error('Error fetching models:', err);
-      setError(err instanceof Error ? err.message : 'Unknown error');
-      setLoading(false);
+      // Fallback to model configs on error
+      try {
+        const modelConfigs = getAllModelConfigs();
+        const modelsFromConfig = Object.values(modelConfigs).map(config => ({
+          id: config.id,
+          name: config.name,
+          status: 'available'
+        }));
+        setModels(modelsFromConfig);
+        setLoading(false);
+      } catch (configErr) {
+        console.error('Error loading model configs:', configErr);
+        setError('Failed to load models');
+        setLoading(false);
+      }
     }
   };
 
@@ -551,7 +573,9 @@ plt.show()`,
           </div>
 
           {/* Model List - Only show when Models section is expanded */}
-          {expandedModels['models-section'] && models.map((model) => (
+          {expandedModels['models-section'] && models.map((model) => {
+            const modelConfig = getAllModelConfigs()[model.id];
+            return (
             <div key={model.id} style={{ marginBottom: '10px', marginLeft: '15px' }}>
               <div
                 onClick={() => {
@@ -586,7 +610,14 @@ plt.show()`,
                   }
                 }}
               >
-                <span>{model.name}</span>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                  <span>{model.name}</span>
+                  {modelConfig && (
+                    <span style={{ fontSize: '12px', color: '#6c757d', marginTop: '2px' }}>
+                      {modelConfig.description}
+                    </span>
+                  )}
+                </div>
                 {selectedModel === model.id && (
                   <span style={{ fontSize: '10px', color: '#6c757d' }}>
                     {expandedContents[model.id] ? '▼' : '▶'}
@@ -1326,7 +1357,7 @@ plt.show()`,
               <h3 style={{ marginBottom: '15px' }}>Select a model to view documentation</h3>
               <p>Click on a model in the sidebar to explore its features and documentation.</p>
             </div>
-           )}
+           ))}
          </div>
      </div>
   );
