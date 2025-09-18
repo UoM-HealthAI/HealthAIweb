@@ -275,14 +275,7 @@ Generated from HealthAI Web Platform
              "Quality control in medical imaging",
              "Automated image screening"
            ],
-           features: modelId === 'scvi_model' ? [
-             "Handles zero-inflation in scRNA-seq data",
-             "Batch effect correction",
-             "Uncertainty quantification",
-             "Scalable to large datasets (>1M cells)",
-             "Integrates multiple datasets seamlessly",
-             "GPU acceleration support"
-           ] : [
+           features: [
              "ResNet-18 architecture for robust feature extraction",
              "Transfer learning from ImageNet pre-training",
              "Real-time inference capabilities",
@@ -290,14 +283,7 @@ Generated from HealthAI Web Platform
              "Confidence score for predictions",
              "Multi-class classification support"
            ],
-           technical_details: modelId === 'scvi_model' ? [
-             "Based on variational autoencoders (VAE)",
-             "Uses negative binomial distribution for gene expression",
-             "Incorporates batch information as covariates",
-             "Amortized inference for scalability",
-             "Deep neural networks for encoder/decoder",
-             "Stochastic optimization with mini-batches"
-           ] : [
+           technical_details: [
              "Deep residual learning architecture",
              "Batch normalization layers",
              "ReLU activation functions",
@@ -305,20 +291,17 @@ Generated from HealthAI Web Platform
              "Softmax output layer",
              "Cross-entropy loss optimization"
            ],
-           citation: modelId === 'scvi_model' ? 
-             "Lopez, R., Regier, J., Cole, M. B., Jordan, M. I., & Yosef, N. (2018). Deep generative modeling for single-cell transcriptomics. Nature methods, 15(12), 1053-1058." :
-             "He, K., Zhang, X., Ren, S., & Sun, J. (2016). Deep residual learning for image recognition. In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 770-778).",
-           mathematical_formulation: modelId === 'scvi_model' ? 
-             `The scVI model assumes the following generative process:
-
-**Latent variables:**
-- z ~ N(0, I) (latent representation)
-- l ~ LogNormal(l_m, l_v) (library size)` :
-             `The ResNet architecture introduces residual learning:
+           citation: "He, K., Zhang, X., Ren, S., & Sun, J. (2016). Deep residual learning for image recognition. In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 770-778).",
+           mathematical_formulation: `The ResNet architecture introduces residual learning:
 
 **Forward propagation:**
 y = F(x, {Wi}) + x
 where F(x, {Wi}) represents residual mapping to be learned
+
+**Key equations:**
+- Identity shortcut: y = x + F(x, {Wi})
+- Bottleneck block: F = W3σ(W2σ(W1x))
+- Loss function: L = -Σ(yi * log(ŷi))
 
 **Observed variables:**
 - x | z, l ~ NB(μ, θ) (gene expression counts)
