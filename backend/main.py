@@ -17,7 +17,7 @@ from core.model_interface import validate_model_result, create_error_result
 app = FastAPI(
     title="HealthAI Web Platform",
     description="A platform for running AI models on health data",
-    version="0.1.0"
+    version="0.1.1"
 )
 
 # Initialize required directories
